@@ -8,7 +8,7 @@ const splitRE = /\r?\n/g;
 const replaceRE = /./g;
 const isSpecialTag = makeMap('script,style,template', true);
 
-/**
+/** => 将单个文件组件（.vue）文件解析为SFC描述符对象。
  * Parse a single-file component (*.vue) file into an SFC Descriptor Object.
  */
 export function parseComponent(content: string, options?: Object = {}): SFCDescriptor {

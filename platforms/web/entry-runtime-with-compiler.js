@@ -33,7 +33,7 @@ Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Com
     return this;
   }
 
-  /* => 缓存配置项，this为调用了$mount方法的实例 */
+  /* => 缓存配置项，this 为调用了$mount方法的实例 */
   const options = this.$options;
 
   // resolve template/el and convert to render function => 解析模板/el并转换为render函数

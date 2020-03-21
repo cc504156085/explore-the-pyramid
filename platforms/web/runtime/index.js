@@ -36,7 +36,7 @@ extend(Vue.options.directives, platformDirectives);
 extend(Vue.options.components, platformComponents);
 
 /* => 使用虚拟 DOM 更新真正的 DOM （核心算法） */
-// install platform patch function => 注册平台补丁功能
+// install platform patch function => 如果是在浏览器中运行，则挂载 patch 方法（服务端渲染，不会操作 DOM ）
 Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
 // public mount method => 公共$mount方法，挂载到Vue的原型

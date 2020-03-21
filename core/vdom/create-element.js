@@ -12,6 +12,7 @@ import { normalizeChildren, simpleNormalizeChildren } from './helpers/index';
 const SIMPLE_NORMALIZE = 1;
 const ALWAYS_NORMALIZE = 2;
 
+/* => 包装器函数，提供一个更灵活的接口，而不会受到 flow 的攻击。 */
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
 export function createElement(

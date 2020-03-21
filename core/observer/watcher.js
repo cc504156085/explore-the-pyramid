@@ -35,18 +35,22 @@ export default class Watcher {
   value: any;
 
   constructor(
-    vm: Component,
-    expOrFn: string | Function,
-    cb: Function,
-    options?: ?Object,
-    isRenderWatcher?: boolean,
+    vm: Component, // => 实例
+    expOrFn: string | Function, // => 表达式
+    cb: Function, // => 回调函数
+    options?: ?Object, // => 配置选项
+    isRenderWatcher?: boolean, // => 是否为渲染Watcher
   ) {
     this.vm = vm;
+
+    /* => 如果是渲染Watcher，在实例上添加 _watcher 私有属性 */
     if (isRenderWatcher) {
       vm._watcher = this;
     }
+
     vm._watchers.push(this);
-    // options
+
+    // options => 选项
     if (options) {
       this.deep = !!options.deep;
       this.user = !!options.user;
@@ -57,21 +61,26 @@ export default class Watcher {
       this.deep = this.user = this.lazy = this.sync = false;
     }
     this.cb = cb;
-    this.id = ++uid; // uid for batching
+    this.id = ++uid; // uid for batching => 用于批处理的uid
     this.active = true;
-    this.dirty = this.lazy; // for lazy watchers
+    this.dirty = this.lazy; // for lazy watchers => 对于懒惰的观察者
     this.deps = [];
     this.newDeps = [];
     this.depIds = new Set();
     this.newDepIds = new Set();
     this.expression = process.env.NODE_ENV !== 'production' ? expOrFn.toString() : '';
-    // parse expression for getter
+
+    // parse expression for getter => getter的解析表达式
+    /* => 判断渲染 Watcher 传入的 updateComponent 是否是一个函数 */
     if (typeof expOrFn === 'function') {
+      /* 将 updateComponent 回调函数赋值给 getter 属性 => 用于 this.get() 处获取数据 */
       this.getter = expOrFn;
     } else {
       this.getter = parsePath(expOrFn);
       if (!this.getter) {
         this.getter = noop;
+
+        /* => 监视路径失败：“${expOrFn}”监视程序只接受简单的点分隔路径。对于完全控制，请改用函数。 */
         process.env.NODE_ENV !== 'production' &&
           warn(
             `Failed watching path: "${expOrFn}" ` +
@@ -84,7 +93,7 @@ export default class Watcher {
     this.value = this.lazy ? undefined : this.get();
   }
 
-  /**
+  /** => 计算getter，然后重新收集依赖项。
    * Evaluate the getter, and re-collect dependencies.
    */
   get() {
@@ -100,8 +109,8 @@ export default class Watcher {
         throw e;
       }
     } finally {
-      // "touch" every property so they are all tracked as
-      // dependencies for deep watching
+      // "touch" every property so they are all tracked as => “触摸”每一个属性，这样它们都被跟踪为
+      // dependencies for deep watching => 深度监视的依赖项
       if (this.deep) {
         traverse(value);
       }
