@@ -39,9 +39,9 @@ extend(Vue.options.components, platformComponents);
 // install platform patch function => 如果是在浏览器中运行，则挂载 patch 方法（服务端渲染，不会操作 DOM ）
 Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
-// public mount method => 公共$mount方法，挂载到Vue的原型
+// public mount method => 公共 $mount 方法，挂载到 Vue 的原型
 Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Component {
-  /* => 如果el元素存在且处于浏览器运行时，则获取该元素的内容 */
+  /* => 如果 el 元素存在且处于浏览器运行时，则获取该元素的内容 */
   el = el && inBrowser ? query(el) : undefined;
 
   /* => 执行该方法 */

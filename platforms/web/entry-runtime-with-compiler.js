@@ -82,7 +82,7 @@ Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Com
         mark('compile');
       }
 
-      /* => 编译成函数，返回render函数 */
+      /* => 编译成函数，返回 render 函数 */
       const { render, staticRenderFns } = compileToFunctions(
         template,
         {
@@ -95,21 +95,19 @@ Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Com
         this,
       );
 
-      /* => 最终Vue自动挂载render函数在配置项上 */
+      /* => 最终 Vue 将 render 函数挂载在配置项上 */
       options.render = render;
       options.staticRenderFns = staticRenderFns;
 
       /* istanbul ignore if => 可忽略 */
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile end');
-
-        /* => this._name 是当前组件（实例）的名字 */
         measure(`vue ${this._name} compile`, 'compile', 'compile end');
       }
     }
   }
 
-  /* => 如果用户指定了render函数，则直接调用缓存的原生$mount方法，执行用户的render函数 */
+  /* => 如果用户指定了 render 函数，则直接调用缓存的原生 $mount 方法，执行用户的 render 函数 */
   return mount.call(this, el, hydrating);
 };
 
