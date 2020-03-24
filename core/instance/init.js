@@ -40,7 +40,7 @@ export function initMixin(Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options);
     } else {
-      /* 为 options 合并一些额外的属性 */
+      /* 若没有提供 options 则为 options 合并一些额外的属性 */
       vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm);
     }
 
@@ -54,7 +54,7 @@ export function initMixin(Vue: Class<Component>) {
     // expose real self => 暴露真实的自我
     vm._self = vm;
 
-    initLifecycle(vm); // => 初始化当前实例的属性、方法（当前实例的生命周期）
+    initLifecycle(vm); // => 初始化当前实例的属性、方法、父子关系
     initEvents(vm); // => 初始化事件
     initRender(vm); // => 初始化渲染
     callHook(vm, 'beforeCreate'); // => 调用第一个生命周期hook

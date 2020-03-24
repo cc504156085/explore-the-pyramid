@@ -154,7 +154,7 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
     /* => 说明在使用了只有运行时的Vue版本时又使用了 template ，没有编译版本的文件帮助用户编译 */
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if => 可忽略 */
-      /* => 判断模板是否存在且模板字符串是否以 # 开头/是否含有 el / el元素 */
+      /* => 判断模板是否存在且模板字符串是否不以 # 开头/是否含有 el / el元素 */
       if (
         (vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
         vm.$options.el ||
@@ -173,6 +173,7 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
       }
     }
   }
+
   callHook(vm, 'beforeMount');
 
   let updateComponent;
@@ -229,12 +230,14 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
   );
   hydrating = false;
 
-  // manually mounted instance, call mounted on self => 手动挂载实例，调用挂载在self上
-  // mounted is called for render-created child components in its inserted hook => mounted在其插入的钩子中调用渲染创建的子组件
+  // manually mounted instance, call mounted on self => 手动挂载实例，调用挂载在 self 上
+  // mounted is called for render-created child components in its inserted hook => mounted 在其插入的钩子中调用渲染创建的子组件
   if (vm.$vnode == null) {
     vm._isMounted = true;
     callHook(vm, 'mounted');
   }
+
+  /* => 返回实例 */
   return vm;
 }
 

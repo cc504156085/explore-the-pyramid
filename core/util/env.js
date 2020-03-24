@@ -1,9 +1,9 @@
 /* @flow */
 
-// can we use __proto__?
+// can we use __proto__? => 我们能用 __proto__ 吗？（非标准属性，某些浏览器不支持）
 export const hasProto = '__proto__' in {};
 
-// Browser environment sniffing
+// Browser environment sniffing => 浏览器环境检测
 export const inBrowser = typeof window !== 'undefined';
 export const inWeex = typeof WXEnvironment !== 'undefined' && !!WXEnvironment.platform;
 export const weexPlatform = inWeex && WXEnvironment.platform.toLowerCase();
@@ -17,7 +17,7 @@ export const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
 export const isPhantomJS = UA && /phantomjs/.test(UA);
 export const isFF = UA && UA.match(/firefox\/(\d+)/);
 
-// Firefox has a "watch" function on Object.prototype...
+// Firefox has a "watch" function on Object.prototype... => Firefox 在 Object.prototype 上有一个“watch”函数。。。
 export const nativeWatch = {}.watch;
 
 export let supportsPassive = false;

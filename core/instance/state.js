@@ -112,7 +112,7 @@ function initData(vm: Component) {
 
   /* => 判断data是否是一个普通对象 */
   if (!isPlainObject(data)) {
-    /* => 如果不是普通对象，将data赋值为一个空对象，且在开发环境下报警告  => 数据函数应该返回一个对象 */
+    /* => 如果不是普通对象，将data赋值为一个空对象，且在开发环境下报警告 => 数据函数应该返回一个对象 */
     data = {};
     process.env.NODE_ENV !== 'production' &&
       warn(
@@ -131,10 +131,12 @@ function initData(vm: Component) {
     const key = keys[i];
     if (process.env.NODE_ENV !== 'production') {
       if (methods && hasOwn(methods, key)) {
+        /* => 方法“${key}”已定义为 data 属性。 */
         warn(`Method "${key}" has already been defined as a data property.`, vm);
       }
     }
     if (props && hasOwn(props, key)) {
+      /* => 数据属性“${key}”已声明为 prop 。改为使用 prop 默认值。 */
       process.env.NODE_ENV !== 'production' &&
         warn(
           `The data property "${key}" is already declared as a prop. ` +
@@ -142,18 +144,20 @@ function initData(vm: Component) {
           vm,
         );
     } else if (!isReserved(key)) {
+      /* => 将不是以 $ _ 开头的属性代理到实例 vm 上 */
       proxy(vm, `_data`, key);
     }
   }
 
   // observe data => 观测数据
-  observe(data, true /* asRootData */);
+  observe(data, true /* asRootData => 是否为根数据（true） */);
 }
 
 export function getData(data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters => 调用数据获取程序时禁用dep收集
   pushTarget();
   try {
+    /* => 尝试执行 data 函数，获取返回值 */
     return data.call(vm, vm);
   } catch (e) {
     handleError(e, vm, `data()`);
@@ -292,7 +296,7 @@ function createWatcher(vm: Component, expOrFn: string | Function, handler: any, 
 }
 
 export function stateMixin(Vue: Class<Component>) {
-  /* => 在使用object.defineProperty时，flow在直接声明definition对象方面有一些问题，因此我们必须在这里按程序构建对象。 */
+  /* => 在使用 object.defineProperty 时，flow 在直接声明 definition 对象方面有一些问题，因此我们必须在这里按程序构建对象。 */
   // flow somehow has problems with directly declared definition object
   // when using Object.defineProperty, so we have to procedurally build up
   // the object here.
@@ -309,11 +313,11 @@ export function stateMixin(Vue: Class<Component>) {
 
   if (process.env.NODE_ENV !== 'production') {
     dataDef.set = function() {
-      /* => 避免替换实例根$data。请改用嵌套数据属性。 */
+      /* => 避免替换实例根 $data。请改用嵌套数据属性。 */
       warn('Avoid replacing instance root $data. ' + 'Use nested data properties instead.', this);
     };
     propsDef.set = function() {
-      /* => $props是只读的 */
+      /* => $props 是只读的 */
       warn(`$props is readonly.`, this);
     };
   }
@@ -326,12 +330,20 @@ export function stateMixin(Vue: Class<Component>) {
 
   Vue.prototype.$watch = function(expOrFn: string | Function, cb: any, options?: Object): Function {
     const vm: Component = this;
+
+    /* => 如果第二个参数是一个纯对象 */
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options);
     }
+
+    /* => 否则是一个函数 */
     options = options || {};
     options.user = true;
+
+    /* => 创建一个 Watcher */
     const watcher = new Watcher(vm, expOrFn, cb, options);
+
+    /* => 是否指定立即执行回调函数 */
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value);
@@ -339,6 +351,8 @@ export function stateMixin(Vue: Class<Component>) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`);
       }
     }
+
+    /* => 返回一个函数，用来卸载监听 */
     return function unwatchFn() {
       watcher.teardown();
     };
