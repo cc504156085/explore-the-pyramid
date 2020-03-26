@@ -44,7 +44,7 @@ const decodeHTMLCached = cached(he.decode);
 
 export const emptySlotScopeToken = `_empty_`;
 
-// configurable state
+// configurable state => 可配置的状态
 export let warn: any;
 let delimiters;
 let transforms;
@@ -71,7 +71,7 @@ export function createASTElement(
   };
 }
 
-/**
+/** => 将 HTML 字符串转换为 AST 。
  * Convert HTML string to AST.
  */
 export function parse(template: string, options: CompilerOptions): ASTElement | void {
@@ -369,6 +369,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
         }
       }
     },
+
     comment(text: string, start, end) {
       // adding anyting as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
@@ -386,6 +387,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       }
     },
   });
+
   return root;
 }
 

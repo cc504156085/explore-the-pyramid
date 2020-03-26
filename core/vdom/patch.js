@@ -25,7 +25,7 @@ export const emptyNode = new VNode('', {}, []);
 
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy'];
 
-/* => 两个节点是否相同 分别比较他们的 key / tag / comment / data / inputType ... */
+/* => 比较两个节点是否相同 分别比较他们的 key / tag / comment / data / inputType ... */
 function sameVnode(a, b) {
   return (
     a.key === b.key &&
@@ -48,7 +48,7 @@ function sameInputType(a, b) {
   return typeA === typeB || (isTextInputType(typeA) && isTextInputType(typeB));
 }
 
-/* => 创建 old 节点的索引的key（默认就是dom节点的索引） */
+/* => 创建 old 节点的索引的 key （默认就是 dom 节点的索引） */
 /* => 所以一般不建议用 v-for="(item,index) in list" 中的 index 作为 :key 的值 */
 /* => 参数：old 节点子节点、old 节点开始索引、old 节点结束索引 */
 function createKeyToOldIdx(children, beginIdx, endIdx) {
@@ -57,6 +57,7 @@ function createKeyToOldIdx(children, beginIdx, endIdx) {
   for (i = beginIdx; i <= endIdx; ++i) {
     /* => 如果当前子节点定义了key，则将当前索引值一一对应 */
     key = children[i].key;
+
     if (isDef(key)) map[key] = i;
   }
   return map;
@@ -483,6 +484,7 @@ export function createPatchFunction(backend) {
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
 
         /* => 如果 new 节点的头结点的 key 存在，则返回这个节点的索引。否则查找 old 节点的索引 */
+        /* => 有 key 时间复杂度O(n)，无 key 时间复杂度 O(n2) */
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
@@ -802,11 +804,11 @@ export function createPatchFunction(backend) {
   }
 
   /* => 返回一个浏览器中使用的 patch 方法 */
-  /* 核心diff算法：通过同层的树节点进行比较，而不是对树的逐层搜索遍历。时间复杂度只有O(n)
+  /* 核心 diff 算法：通过同层的树节点进行比较，而不是对树的逐层搜索遍历。时间复杂度只有O(n)
    * 比较规则：
    * 1.新 VNode 中有节点不存在时，则从旧 VNode 中删除
    * 2.新 VNode 中有节点而在旧 VNode 中不存在时，则在旧 VNode 中新增
-   * 3.如果新旧 VNode 的节点层次都一样，就比较他们的节点类型、属性、内容、子节点等等。发现不同则进行相关操作
+   * 3.如果新旧 VNode 的节点都一样，就比较他们的节点类型、属性、内容、子节点等等。发现不同则进行相关操作
    */
   return function patch(oldVnode, vnode, hydrating, removeOnly) {
     /* => isUndefined 是否未定义（null） isDef 是否已定义（非null） */

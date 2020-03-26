@@ -7,7 +7,7 @@ import { warn } from '../util/index';
 
 /* Vue 的构造函数 */
 function Vue(options) {
-  /* => 判断Vue实例是否是 new 出来的 */
+  /* => 判断 Vue 实例是否是 new 出来的 */
   if (process.env.NODE_ENV !== 'production' && !(this instanceof Vue)) {
     /* => Vue是构造函数，应使用“new”关键字调用 */
     warn('Vue is a constructor and should be called with the `new` keyword');

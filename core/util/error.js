@@ -42,16 +42,20 @@ export function invokeWithErrorHandling(
 ) {
   let res;
   try {
+    /* => 依次调用事件回调函数，接受返回值 */
     res = args ? handler.apply(context, args) : handler.call(context);
+
     if (res && !res._isVue && isPromise(res) && !res._handled) {
       res.catch(e => handleError(e, vm, info + ` (Promise/async)`));
       // issue #9511
-      // avoid catch triggering multiple times when nested calls
+      // avoid catch triggering multiple times when nested calls => 避免在嵌套调用时多次触发catch
       res._handled = true;
     }
   } catch (e) {
     handleError(e, vm, info);
   }
+
+  /* => 返回回调函数的返回值 */
   return res;
 }
 

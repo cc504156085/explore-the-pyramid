@@ -26,7 +26,7 @@ import {
   renderRecyclableComponentTemplate,
 } from 'weex/runtime/recycle-list/render-component-template';
 
-// inline hooks to be invoked on component VNodes during patch
+// inline hooks to be invoked on component VNodes during patch => 在修补期间在组件 vnode 上调用的内联挂钩
 const componentVNodeHooks = {
   init(vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (vnode.componentInstance && !vnode.componentInstance._isDestroyed && vnode.data.keepAlive) {
@@ -88,6 +88,7 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks);
 
+/* => 创建组件 */
 export function createComponent(
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -193,6 +194,7 @@ export function createComponent(
   return vnode;
 }
 
+/* => 创建组件实例 */
 export function createComponentInstanceForVnode(
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   parent: any, // activeInstance in lifecycle state
@@ -211,6 +213,7 @@ export function createComponentInstanceForVnode(
   return new vnode.componentOptions.Ctor(options);
 }
 
+/* => 注册组件 hooks */
 function installComponentHooks(data: VNodeData) {
   const hooks = data.hook || (data.hook = {});
   for (let i = 0; i < hooksToMerge.length; i++) {

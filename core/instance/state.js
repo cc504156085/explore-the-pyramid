@@ -107,10 +107,10 @@ function initData(vm: Component) {
   /* => 拿到实例上的数据 */
   let data = vm.$options.data;
 
-  /* => 判断data是否是一个函数 */
+  /* => 判断 data 是否是一个函数 */
   data = vm._data = typeof data === 'function' ? getData(data, vm) : data || {};
 
-  /* => 判断data是否是一个普通对象 */
+  /* => 判断 data 是否是一个纯对象 */
   if (!isPlainObject(data)) {
     /* => 如果不是普通对象，将data赋值为一个空对象，且在开发环境下报警告 => 数据函数应该返回一个对象 */
     data = {};
@@ -154,7 +154,7 @@ function initData(vm: Component) {
 }
 
 export function getData(data: Function, vm: Component): any {
-  // #7573 disable dep collection when invoking data getters => 调用数据获取程序时禁用dep收集
+  // #7573 disable dep collection when invoking data getters => 调用数据获取程序时禁用 dep 收集
   pushTarget();
   try {
     /* => 尝试执行 data 函数，获取返回值 */
@@ -322,9 +322,11 @@ export function stateMixin(Vue: Class<Component>) {
     };
   }
 
+  /* => 数据代理 */
   Object.defineProperty(Vue.prototype, '$data', dataDef);
   Object.defineProperty(Vue.prototype, '$props', propsDef);
 
+  /* => 挂载 $set / $delete 方法 */
   Vue.prototype.$set = set;
   Vue.prototype.$delete = del;
 

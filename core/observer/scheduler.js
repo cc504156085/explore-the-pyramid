@@ -156,19 +156,26 @@ function callActivatedHooks(queue) {
  */
 export function queueWatcher(watcher: Watcher) {
   const id = watcher.id;
+
+  /* => 判断 has 对象中是否存在该 watcher */
   if (has[id] == null) {
+    /* => 不存在，标识为 true */
     has[id] = true;
+
+    /* => 判断是否已经刷新 */
     if (!flushing) {
+      /* => 将当前 watcher 压入队列 */
       queue.push(watcher);
     } else {
-      // if already flushing, splice the watcher based on its id => 如果已经刷新，则根据观察程序的id将其拼接
-      // if already past its id, it will be run next immediately. => 如果已经超过了它的id，它将立即运行
+      // if already flushing, splice the watcher based on its id  => 如果已经刷新，则根据观察程序的 id 将其拼接
+      // if already past its id, it will be run next immediately. => 如果已经超过了它的 id ，它将立即运行
       let i = queue.length - 1;
       while (i > index && queue[i].id > watcher.id) {
         i--;
       }
       queue.splice(i + 1, 0, watcher);
     }
+
     // queue the flush => 清空队列
     if (!waiting) {
       waiting = true;

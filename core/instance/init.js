@@ -55,7 +55,7 @@ export function initMixin(Vue: Class<Component>) {
     vm._self = vm;
 
     initLifecycle(vm); // => 初始化当前实例的属性、方法、父子关系
-    initEvents(vm); // => 初始化事件
+    initEvents(vm); // => 初始化事件（父组件传给子组件的事件）、同时创建事件池对象，存储事件
     initRender(vm); // => 初始化渲染
     callHook(vm, 'beforeCreate'); // => 调用第一个生命周期hook
     initInjections(vm); // resolve injections before data/props => 在初始化数据之前解析注入
@@ -72,7 +72,7 @@ export function initMixin(Vue: Class<Component>) {
 
     /* => 以上代码用于创建组件（初始化一个组件所需要的各个东西） */
     if (vm.$options.el) {
-      /* => 将组件挂载到 el 元素里 */
+      /* => 如果提供了 el ，将组件挂载到 el 元素里。否则需要手动调用 $mount */
       vm.$mount(vm.$options.el);
     }
   };

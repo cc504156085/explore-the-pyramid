@@ -1,4 +1,4 @@
-/**
+/** => 没有类型检查这个文件，因为它主要是供应商代码。
  * Not type-checking this file because it's mostly vendor code.
  */
 
@@ -13,7 +13,7 @@ import { makeMap, no } from 'shared/util';
 import { isNonPhrasingTag } from 'web/compiler/util';
 import { unicodeRegExp } from 'core/util/lang';
 
-// Regular Expressions for parsing tags and attributes
+// Regular Expressions for parsing tags and attributes => 用于解析标记和属性的正则表达式
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`;
@@ -22,11 +22,11 @@ const startTagOpen = new RegExp(`^<${qnameCapture}`);
 const startTagClose = /^\s*(\/?)>/;
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 const doctype = /^<!DOCTYPE [^>]+>/i;
-// #7298: escape - to avoid being passed as HTML comment when inlined in page
+// #7298: escape - to avoid being passed as HTML comment when inlined in page => 转义 — 避免在页面内联时作为 HTML 注释传递
 const comment = /^<!\--/;
 const conditionalComment = /^<!\[/;
 
-// Special Elements (can contain anything)
+// Special Elements (can contain anything) => 特殊元素(可以包含任何内容)
 export const isPlainTextElement = makeMap('script,style,textarea', true);
 const reCache = {};
 
@@ -60,6 +60,8 @@ export function parseHTML(html, options) {
   let last, lastTag;
   while (html) {
     last = html;
+
+    /* => 确保我们不是在像 script / style 这样的纯文本内容元素中 */
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf('<');

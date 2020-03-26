@@ -7,24 +7,30 @@ let isPlatformReservedTag;
 
 const genStaticKeysCached = cached(genStaticKeys);
 
-/**
+/** => 优化器的目标:遍历模板生成的 AST 树并检测纯静态的子树，即 DOM 中从不需要更改的部分。
  * Goal of the optimizer: walk the generated template AST tree
  * and detect sub-trees that are purely static, i.e. parts of
  * the DOM that never needs to change.
  *
+ * => 一旦我们检测到这些子树，我们就可以
  * Once we detect these sub-trees, we can:
  *
+ * => 将它们提升为常量，这样我们就不再需要在每次重新渲染时为它们创建新的节点（就地复用、克隆节点）;
  * 1. Hoist them into constants, so that we no longer need to
  *    create fresh nodes for them on each re-render;
+ *
+ * => 在打补丁的过程中完全跳过它们。
  * 2. Completely skip them in the patching process.
  */
 export function optimize(root: ?ASTElement, options: CompilerOptions) {
   if (!root) return;
   isStaticKey = genStaticKeysCached(options.staticKeys || '');
   isPlatformReservedTag = options.isReservedTag || no;
-  // first pass: mark all non-static nodes.
+
+  // first pass: mark all non-static nodes. => 第一遍:标记所有非静态节点。
   markStatic(root);
-  // second pass: mark static roots.
+
+  // second pass: mark static roots. => 第二步:标记静态根节点。
   markStaticRoots(root, false);
 }
 
@@ -100,20 +106,20 @@ function markStaticRoots(node: ASTNode, isInFor: boolean) {
 
 function isStatic(node: ASTNode): boolean {
   if (node.type === 2) {
-    // expression
+    // expression => 带变量的动态文本节点
     return false;
   }
   if (node.type === 3) {
-    // text
+    // text => 不带变量的纯文本节点
     return true;
   }
   return !!(
     node.pre ||
-    (!node.hasBindings && // no dynamic bindings
+    (!node.hasBindings && // no dynamic bindings => 没有动态绑定
     !node.if &&
-    !node.for && // not v-if or v-for or v-else
-    !isBuiltInTag(node.tag) && // not a built-in
-    isPlatformReservedTag(node.tag) && // not a component
+    !node.for && // not v-if or v-for or v-else => 没有 v-if v-for v-else
+    !isBuiltInTag(node.tag) && // not a built-in => 不是内置标签
+    isPlatformReservedTag(node.tag) && // not a component => 不是组件
       !isDirectChildOfTemplateFor(node) &&
       Object.keys(node).every(isStaticKey))
   );

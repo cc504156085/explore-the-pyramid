@@ -85,6 +85,7 @@ export function FunctionalRenderContext(
 
 installRenderHelpers(FunctionalRenderContext.prototype);
 
+/* => 创建函数式组件 */
 export function createFunctionalComponent(
   Ctor: Class<Component>,
   propsData: ?Object,

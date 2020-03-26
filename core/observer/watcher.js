@@ -11,8 +11,8 @@ import type { SimpleSet } from '../util/index';
 let uid = 0;
 
 /**
- * A watcher parses an expression, collects dependencies, => 观察程序解析表达式，收集依赖项
- * and fires callback when the expression value changes. => 并在表达式值更改时触发回调。
+ * A watcher parses an expression, collects dependencies, => 一个 Watcher 解析表达式，收集依赖项
+ * and fires callback when the expression value changes.  => 并在表达式值更改时触发回调。
  * This is used for both the $watch() api and directives. => 这用于 $watch() api 和指令。
  */
 export default class Watcher {
@@ -48,6 +48,7 @@ export default class Watcher {
       vm._watcher = this;
     }
 
+    /* => 给每个实例创建一个 watchers 收集池，当前实例下，每创建一个 watcher ，就将自己存入（ $watch 方法） */
     vm._watchers.push(this);
 
     // options => 选项，使用 $watch 时传入
@@ -173,7 +174,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run();
     } else {
-      /* => 将调用 update 的订阅者添加到 Watcher 队列 */
+      /* => 将调用 update 的订阅者添加到 Watcher 异步队列 */
       queueWatcher(this);
     }
   }
@@ -238,13 +239,18 @@ export default class Watcher {
       // remove self from vm's watcher list
       // this is a somewhat expensive operation so we skip it
       // if the vm is being destroyed.
+
+      /* => 从观察者列表中移除自己 */
       if (!this.vm._isBeingDestroyed) {
         remove(this.vm._watchers, this);
       }
+
       let i = this.deps.length;
       while (i--) {
+        /* => 从每个依赖列表中移除自己 */
         this.deps[i].removeSub(this);
       }
+
       this.active = false;
     }
   }

@@ -19,14 +19,14 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   configDef.get = () => config;
   if (process.env.NODE_ENV !== 'production') {
     configDef.set = () => {
-      /* => 不要替换Vue.config对象，而是设置单个字段。 */
+      /* => 不要替换 Vue.config 对象，而是设置单个字段。 */
       warn('Do not replace the Vue.config object, set individual fields instead.');
     };
   }
   Object.defineProperty(Vue, 'config', configDef);
 
-  // exposed util methods. => 公开的util方法。
-  // NOTE: these are not considered part of the public API. => 注意：这些不被视为公共API的一部分。
+  // exposed util methods. => 公开的 util 方法。
+  // NOTE: these are not considered part of the public API. => 注意：这些不被视为公共 API 的一部分。
   // avoid relying on them unless you are aware of the risk. => 除非您意识到风险，否则请避免依赖它们。
   Vue.util = {
     warn,

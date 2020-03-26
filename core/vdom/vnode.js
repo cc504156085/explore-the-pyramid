@@ -71,6 +71,7 @@ export default class VNode {
   }
 }
 
+/* => 创建注释节点（空节点） */
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode();
   node.text = text;
@@ -78,6 +79,7 @@ export const createEmptyVNode = (text: string = '') => {
   return node;
 };
 
+/* => 创建文本节点 */
 export function createTextVNode(val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val));
 }
@@ -88,13 +90,13 @@ export function createTextVNode(val: string | number) {
 // multiple renders, cloning them avoids errors when DOM manipulations rely
 // on their elm reference.
 export function cloneVNode(vnode: VNode): VNode {
+  /* => 将当前节点上的属性复制，创建新节点 */
   const cloned = new VNode(
     vnode.tag,
     vnode.data,
 
     // #7975 => 克隆子数组以避免在克隆子数组时对原始数组进行变异。
-    // clone children array to avoid mutating original in case of cloning
-    // a child.
+    // clone children array to avoid mutating original in case of cloning a child.
     vnode.children && vnode.children.slice(),
     vnode.text,
     vnode.elm,
@@ -102,6 +104,7 @@ export function cloneVNode(vnode: VNode): VNode {
     vnode.componentOptions,
     vnode.asyncFactory,
   );
+
   cloned.ns = vnode.ns;
   cloned.isStatic = vnode.isStatic;
   cloned.key = vnode.key;
@@ -110,6 +113,8 @@ export function cloneVNode(vnode: VNode): VNode {
   cloned.fnOptions = vnode.fnOptions;
   cloned.fnScopeId = vnode.fnScopeId;
   cloned.asyncMeta = vnode.asyncMeta;
+
+  /* => 标识为克隆节点 */
   cloned.isCloned = true;
   return cloned;
 }

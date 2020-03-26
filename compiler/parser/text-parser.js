@@ -35,6 +35,8 @@ export function parseText(text: string, delimiters?: [string, string]): TextPars
     }
     // tag token
     const exp = parseFilters(match[1].trim());
+
+    /* => _s(exp) => toString(exp) */
     tokens.push(`_s(${exp})`);
     rawTokens.push({ '@binding': exp });
     lastIndex = index + match[0].length;
