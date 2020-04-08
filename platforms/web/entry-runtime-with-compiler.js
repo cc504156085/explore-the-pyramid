@@ -107,6 +107,7 @@ Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Com
     }
   }
 
+  /* => 显示伪多态 */
   /* => 如果用户指定了 render 函数，则直接调用缓存的原生 $mount 方法，执行用户的 render 函数 */
   return mount.call(this, el, hydrating);
 };

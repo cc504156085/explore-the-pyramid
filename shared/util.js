@@ -38,7 +38,7 @@ export function isPrimitive(value: any): boolean %checks {
   );
 }
 
-/** => 快速对象检查，当我们知道值是符合JSON的类型时，它主要用于区分对象和原始值。
+/** => 快速对象（数组、正则、函数）检查，当我们知道值是符合 JSON 的类型时，它主要用于区分对象和原始值。
  * Quick object check - this is primarily used to tell
  * Objects from primitive values when we know the value
  * is a JSON-compliant type.
@@ -57,7 +57,7 @@ export function toRawType(value: any): string {
   return _toString.call(value).slice(8, -1);
 }
 
-/** => 严格的对象类型检查。仅对纯JavaScript对象返回true。（普通对象（不是null））
+/** => 严格的对象类型检查。仅对纯 JavaScript 对象返回 true。
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
@@ -70,7 +70,7 @@ export function isRegExp(v: any): boolean {
   return _toString.call(v) === '[object RegExp]';
 }
 
-/** => 检查val是否是有效的数组索引。
+/** => 检查 val 是否是有效的数组索引。
  * Check if val is a valid array index.
  */
 export function isValidArrayIndex(val: any): boolean {
@@ -96,14 +96,14 @@ export function toString(val: any): string {
 
 /**
  * Convert an input value to a number for persistence. => 将输入值转换为数字以进行持久化
- * If the conversion fails, return original string. => 如果转换失败，则返回原始字符串
+ * If the conversion fails, return original string.    => 如果转换失败，则返回原始字符串
  */
 export function toNumber(val: string): number | string {
   const n = parseFloat(val);
   return isNaN(n) ? val : n;
 }
 
-/** => 生成一个map并返回一个函数，用于检查该map中是否有key
+/** => 生成一个 map 并返回一个函数，用于检查该 map 中是否有 key
  * Make a map and return a function for checking if a key
  * is in that map.
  */
@@ -165,7 +165,7 @@ export const camelize = cached((str: string): string => {
   return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''));
 });
 
-/** 将首字母大写。
+/** => 将首字母大写。
  * Capitalize a string.
  */
 export const capitalize = cached((str: string): string => {
@@ -181,11 +181,11 @@ export const hyphenate = cached((str: string): string => {
 });
 
 /**
- * Simple bind polyfill for environments that do not support it, => 简单绑定polyfill适用于不支持它的环境，例如PhantomJS 1.x。
- * e.g., PhantomJS 1.x. Technically, we don't need this anymore => 从技术上讲，我们不再需要它了，
- * since native bind is now performant enough in most browsers. => 因为本机绑定现在在大多数浏览器中已经有足够的性能了。
+ * Simple bind polyfill for environments that do not support it,    => 简单绑定polyfill适用于不支持它的环境，例如PhantomJS 1.x。
+ * e.g., PhantomJS 1.x. Technically, we don't need this anymore     => 从技术上讲，我们不再需要它了，
+ * since native bind is now performant enough in most browsers.     => 因为本机绑定现在在大多数浏览器中已经有足够的性能了。
  * But removing it would mean breaking code that was able to run in => 但是删除它将意味着破坏能够在PhantomJS 1.x中运行的代码，
- * PhantomJS 1.x, so this must be kept for backward compatibility. => 因此必须保留这些代码以实现向后兼容。
+ * PhantomJS 1.x, so this must be kept for backward compatibility.  => 因此必须保留这些代码以实现向后兼容。
  */
 
 /* istanbul ignore next */

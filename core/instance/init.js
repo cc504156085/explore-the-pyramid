@@ -12,8 +12,9 @@ import { extend, mergeOptions, formatComponentName } from '../util/index';
 
 let uid = 0;
 
+/* => 混入 init 方法 */
 export function initMixin(Vue: Class<Component>) {
-  Vue.prototype._init = function(options?: Object) {
+  Vue.prototype._init = function (options?: Object) {
     /* 当前Vue实例 */
     const vm: Component = this;
 
@@ -78,9 +79,11 @@ export function initMixin(Vue: Class<Component>) {
   };
 }
 
+/* => 初始化内部组件 */
 export function initInternalComponent(vm: Component, options: InternalComponentOptions) {
   const opts = (vm.$options = Object.create(vm.constructor.options));
-  // doing this because it's faster than dynamic enumeration.
+
+  // doing this because it's faster than dynamic enumeration. => 这样做是因为它比动态枚举快。
   const parentVnode = options._parentVnode;
   opts.parent = options.parent;
   opts._parentVnode = parentVnode;
@@ -97,18 +100,21 @@ export function initInternalComponent(vm: Component, options: InternalComponentO
   }
 }
 
+/* => 解析构造函数中的选项 */
 export function resolveConstructorOptions(Ctor: Class<Component>) {
   let options = Ctor.options;
   if (Ctor.super) {
     const superOptions = resolveConstructorOptions(Ctor.super);
     const cachedSuperOptions = Ctor.superOptions;
     if (superOptions !== cachedSuperOptions) {
-      // super option changed,
-      // need to resolve new options.
+      // super option changed, => 改变超类选项
+      // need to resolve new options. => 需要解决新的选项。
       Ctor.superOptions = superOptions;
-      // check if there are any late-modified/attached options (#4976)
+
+      // check if there are any late-modified/attached options (#4976) => 检查是否有任何后期修改/附加的选项
       const modifiedOptions = resolveModifiedOptions(Ctor);
-      // update base extend options
+
+      // update base extend options => 更新基本扩展选项
       if (modifiedOptions) {
         extend(Ctor.extendOptions, modifiedOptions);
       }
@@ -121,6 +127,7 @@ export function resolveConstructorOptions(Ctor: Class<Component>) {
   return options;
 }
 
+/* => 解析修改过的选项 */
 function resolveModifiedOptions(Ctor: Class<Component>): ?Object {
   let modified;
   const latest = Ctor.options;

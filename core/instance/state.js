@@ -296,7 +296,7 @@ function createWatcher(vm: Component, expOrFn: string | Function, handler: any, 
 }
 
 export function stateMixin(Vue: Class<Component>) {
-  /* => 在使用 object.defineProperty 时，flow 在直接声明 definition 对象方面有一些问题，因此我们必须在这里按程序构建对象。 */
+  /* => 在使用 object.defineProperty 时，flow 在直接声明 definition 对象方面有一些问题，因此我们必须在这里按流程构建对象。 */
   // flow somehow has problems with directly declared definition object
   // when using Object.defineProperty, so we have to procedurally build up
   // the object here.
