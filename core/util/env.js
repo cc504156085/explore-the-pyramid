@@ -63,11 +63,7 @@ export function isNative(Ctor: any): boolean {
   return typeof Ctor === 'function' && /native code/.test(Ctor.toString());
 }
 
-export const hasSymbol =
-  typeof Symbol !== 'undefined' &&
-  isNative(Symbol) &&
-  typeof Reflect !== 'undefined' &&
-  isNative(Reflect.ownKeys);
+export const hasSymbol = typeof Symbol !== 'undefined' && isNative(Symbol) && typeof Reflect !== 'undefined' && isNative(Reflect.ownKeys);
 
 let _Set; // $flow-disable-line
 /* istanbul ignore if */ if (typeof Set !== 'undefined' && isNative(Set)) {

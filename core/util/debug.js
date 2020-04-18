@@ -11,7 +11,7 @@ export let formatComponentName = (noop: any);
 if (process.env.NODE_ENV !== 'production') {
   const hasConsole = typeof console !== 'undefined';
   const classifyRE = /(?:^|[-_])(\w)/g;
-  const classify = str => str.replace(classifyRE, c => c.toUpperCase()).replace(/[-_]/g, '');
+  const classify = (str) => str.replace(classifyRE, (c) => c.toUpperCase()).replace(/[-_]/g, '');
 
   warn = (msg, vm) => {
     const trace = vm ? generateComponentTrace(vm) : '';
@@ -33,12 +33,7 @@ if (process.env.NODE_ENV !== 'production') {
     if (vm.$root === vm) {
       return '<Root>';
     }
-    const options =
-      typeof vm === 'function' && vm.cid != null
-        ? vm.options
-        : vm._isVue
-        ? vm.$options || vm.constructor.options
-        : vm;
+    const options = typeof vm === 'function' && vm.cid != null ? vm.options : vm._isVue ? vm.$options || vm.constructor.options : vm;
     let name = options.name || options._componentTag;
     const file = options.__file;
     if (!name && file) {
@@ -46,10 +41,7 @@ if (process.env.NODE_ENV !== 'production') {
       name = match && match[1];
     }
 
-    return (
-      (name ? `<${classify(name)}>` : `<Anonymous>`) +
-      (file && includeFile !== false ? ` at ${file}` : '')
-    );
+    return (name ? `<${classify(name)}>` : `<Anonymous>`) + (file && includeFile !== false ? ` at ${file}` : '');
   };
 
   const repeat = (str, n) => {
@@ -62,7 +54,7 @@ if (process.env.NODE_ENV !== 'production') {
     return res;
   };
 
-  generateComponentTrace = vm => {
+  generateComponentTrace = (vm) => {
     if (vm._isVue && vm.$parent) {
       const tree = [];
       let currentRecursiveSequence = 0;
@@ -87,9 +79,7 @@ if (process.env.NODE_ENV !== 'production') {
           .map(
             (vm, i) =>
               `${i === 0 ? '---> ' : repeat(' ', 5 + i * 2)}${
-                Array.isArray(vm)
-                  ? `${formatComponentName(vm[0])}... (${vm[1]} recursive calls)`
-                  : formatComponentName(vm)
+                Array.isArray(vm) ? `${formatComponentName(vm[0])}... (${vm[1]} recursive calls)` : formatComponentName(vm)
               }`,
           )
           .join('\n')

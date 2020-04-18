@@ -6,9 +6,11 @@ import { makeMap } from 'shared/util';
 
 const splitRE = /\r?\n/g;
 const replaceRE = /./g;
+
+/* => 是否是特殊的标签 */
 const isSpecialTag = makeMap('script,style,template', true);
 
-/** => 将单个文件组件（.vue）文件解析为SFC描述符对象。
+/** => 将单个文件组件（.vue）文件解析为 SFC 描述符对象。
  * Parse a single-file component (*.vue) file into an SFC Descriptor Object.
  */
 export function parseComponent(content: string, options?: Object = {}): SFCDescriptor {
@@ -22,7 +24,7 @@ export function parseComponent(content: string, options?: Object = {}): SFCDescr
   let depth = 0;
   let currentBlock: ?SFCBlock = null;
 
-  let warn = msg => {
+  let warn = (msg) => {
     sfc.errors.push(msg);
   };
 
@@ -58,7 +60,7 @@ export function parseComponent(content: string, options?: Object = {}): SFCDescr
           sfc[tag] = currentBlock;
         }
       } else {
-        // custom blocks
+        // custom blocks => 自定义模块
         sfc.customBlocks.push(currentBlock);
       }
     }
@@ -92,6 +94,7 @@ export function parseComponent(content: string, options?: Object = {}): SFCDescr
       if (options.deindent !== false) {
         text = deindent(text);
       }
+      // => 填充内容，以便 l 和预处理程序能够在错误和警告中输出正确的行号
       // pad content so that linters and pre-processors can output correct
       // line numbers in errors and warnings
       if (currentBlock.type !== 'template' && options.pad) {
@@ -113,12 +116,7 @@ export function parseComponent(content: string, options?: Object = {}): SFCDescr
     }
   }
 
-  parseHTML(content, {
-    warn,
-    start,
-    end,
-    outputSourceRange: options.outputSourceRange,
-  });
+  parseHTML(content, { warn, start, end, outputSourceRange: options.outputSourceRange });
 
   return sfc;
 }

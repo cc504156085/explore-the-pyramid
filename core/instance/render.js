@@ -37,7 +37,7 @@ export function initRender(vm: Component) {
   // they need to be reactive so that HOCs using them are always updated => 它们必须是被动的，这样使用它们的hooks总是更新的
   const parentData = parentVnode && parentVnode.data;
 
-  /* istanbul ignore else => 可忽略 else */
+  /* istanbul ignore else => 性能测试忽略项 */
   if (process.env.NODE_ENV !== 'production') {
     defineReactive(
       vm,
@@ -74,11 +74,11 @@ export function renderMixin(Vue: Class<Component>) {
   // install runtime convenience helpers => 注册运行时便利助手
   installRenderHelpers(Vue.prototype);
 
-  Vue.prototype.$nextTick = function(fn: Function) {
+  Vue.prototype.$nextTick = function (fn: Function) {
     return nextTick(fn, this);
   };
 
-  Vue.prototype._render = function(): VNode {
+  Vue.prototype._render = function (): VNode {
     /* => 缓存调用的上下文 */
     const vm: Component = this;
 
@@ -86,11 +86,7 @@ export function renderMixin(Vue: Class<Component>) {
     const { render, _parentVnode } = vm.$options;
 
     if (_parentVnode) {
-      vm.$scopedSlots = normalizeScopedSlots(
-        _parentVnode.data.scopedSlots,
-        vm.$slots,
-        vm.$scopedSlots,
-      );
+      vm.$scopedSlots = normalizeScopedSlots(_parentVnode.data.scopedSlots, vm.$slots, vm.$scopedSlots);
     }
 
     // set parent vnode. this allows render functions to have access
@@ -140,11 +136,7 @@ export function renderMixin(Vue: Class<Component>) {
       if (process.env.NODE_ENV !== 'production' && Array.isArray(vnode)) {
         /* => 从 render 函数返回多个根节点。Render函数应该返回一个根节点。 */
         /* => 所以在 template 模板中只能指定一个根节点 */
-        warn(
-          'Multiple root nodes returned from render function. Render function ' +
-            'should return a single root node.',
-          vm,
-        );
+        warn(`Multiple root nodes returned from render function. Render function should return a single root node.`, vm);
       }
 
       vnode = createEmptyVNode();

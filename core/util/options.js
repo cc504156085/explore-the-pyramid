@@ -8,15 +8,7 @@ import { nativeWatch, hasSymbol } from './env';
 
 import { ASSET_TYPES, LIFECYCLE_HOOKS } from 'shared/constants';
 
-import {
-  extend,
-  hasOwn,
-  camelize,
-  toRawType,
-  capitalize,
-  isBuiltInTag,
-  isPlainObject,
-} from 'shared/util';
+import { extend, hasOwn, camelize, toRawType, capitalize, isBuiltInTag, isPlainObject } from 'shared/util';
 
 /**
  * Option overwriting strategies are functions that handle
@@ -29,11 +21,9 @@ const strats = config.optionMergeStrategies;
  * Options with restrictions
  */
 if (process.env.NODE_ENV !== 'production') {
-  strats.el = strats.propsData = function(parent, child, vm, key) {
+  strats.el = strats.propsData = function (parent, child, vm, key) {
     if (!vm) {
-      warn(
-        `option "${key}" can only be used during instance ` + 'creation with the `new` keyword.',
-      );
+      warn(`option "${key}" can only be used during instance ` + 'creation with the `new` keyword.');
     }
     return defaultStrat(parent, child);
   };
@@ -100,16 +90,11 @@ export function mergeDataOrFn(parentVal: any, childVal: any, vm?: Component): ?F
   }
 }
 
-strats.data = function(parentVal: any, childVal: any, vm?: Component): ?Function {
+strats.data = function (parentVal: any, childVal: any, vm?: Component): ?Function {
   if (!vm) {
     if (childVal && typeof childVal !== 'function') {
       process.env.NODE_ENV !== 'production' &&
-        warn(
-          'The "data" option should be a function ' +
-            'that returns a per-instance value in component ' +
-            'definitions.',
-          vm,
-        );
+        warn('The "data" option should be a function ' + 'that returns a per-instance value in component ' + 'definitions.', vm);
 
       return parentVal;
     }
@@ -122,17 +107,8 @@ strats.data = function(parentVal: any, childVal: any, vm?: Component): ?Function
 /**
  * Hooks and props are merged as arrays.
  */
-function mergeHook(
-  parentVal: ?Array<Function>,
-  childVal: ?Function | ?Array<Function>,
-): ?Array<Function> {
-  const res = childVal
-    ? parentVal
-      ? parentVal.concat(childVal)
-      : Array.isArray(childVal)
-      ? childVal
-      : [childVal]
-    : parentVal;
+function mergeHook(parentVal: ?Array<Function>, childVal: ?Function | ?Array<Function>): ?Array<Function> {
+  const res = childVal ? (parentVal ? parentVal.concat(childVal) : Array.isArray(childVal) ? childVal : [childVal]) : parentVal;
   return res ? dedupeHooks(res) : res;
 }
 
@@ -146,7 +122,7 @@ function dedupeHooks(hooks) {
   return res;
 }
 
-LIFECYCLE_HOOKS.forEach(hook => {
+LIFECYCLE_HOOKS.forEach((hook) => {
   strats[hook] = mergeHook;
 });
 
@@ -167,7 +143,7 @@ function mergeAssets(parentVal: ?Object, childVal: ?Object, vm?: Component, key:
   }
 }
 
-ASSET_TYPES.forEach(function(type) {
+ASSET_TYPES.forEach(function (type) {
   strats[type + 's'] = mergeAssets;
 });
 
@@ -177,12 +153,7 @@ ASSET_TYPES.forEach(function(type) {
  * Watchers hashes should not overwrite one
  * another, so we merge them as arrays.
  */
-strats.watch = function(
-  parentVal: ?Object,
-  childVal: ?Object,
-  vm?: Component,
-  key: string,
-): ?Object {
+strats.watch = function (parentVal: ?Object, childVal: ?Object, vm?: Component, key: string): ?Object {
   // work around Firefox's Object.prototype.watch...
   if (parentVal === nativeWatch) parentVal = undefined;
   if (childVal === nativeWatch) childVal = undefined;
@@ -208,7 +179,7 @@ strats.watch = function(
 /**
  * Other object hashes.
  */
-strats.props = strats.methods = strats.inject = strats.computed = function(
+strats.props = strats.methods = strats.inject = strats.computed = function (
   parentVal: ?Object,
   childVal: ?Object,
   vm?: Component,
@@ -228,14 +199,15 @@ strats.provide = mergeDataOrFn;
 /**
  * Default strategy.
  */
-const defaultStrat = function(parentVal: any, childVal: any): any {
+const defaultStrat = function (parentVal: any, childVal: any): any {
   return childVal === undefined ? parentVal : childVal;
 };
 
-/**
+/** => 验证组件名称
  * Validate component names
  */
 function checkComponents(options: Object) {
+  // => 循环遍历组件对象的每一个组件，验证其组件名称
   for (const key in options.components) {
     validateComponentName(key);
   }
@@ -243,19 +215,17 @@ function checkComponents(options: Object) {
 
 export function validateComponentName(name: string) {
   if (!new RegExp(`^[a-zA-Z][\\-\\.0-9_${unicodeRegExp.source}]*$`).test(name)) {
-    warn(
-      'Invalid component name: "' +
-        name +
-        '". Component names ' +
-        'should conform to valid custom element name in html5 specification.',
-    );
+    // => 无效的组件名称：" name " | 组件名称应符合 html5 规范中有效的自定义元素名称。
+    warn(`Invalid component name: "${name}". Component names should conform to valid custom element name in html5 specification.`);
   }
+
   if (isBuiltInTag(name) || config.isReservedTag(name)) {
-    warn('Do not use built-in or reserved HTML elements as component ' + 'id: ' + name);
+    // => 不要使用内置（slot / component）或保留的 HTML 元素作为组件
+    warn(`Do not use built-in or reserved HTML elements as component. id: '${name}'`);
   }
 }
 
-/**
+/** => 确保所有的道具选项语法都规范化为基于对象的格式。
  * Ensure all props option syntax are normalized into the
  * Object-based format.
  */
@@ -282,16 +252,12 @@ function normalizeProps(options: Object, vm: ?Component) {
       res[name] = isPlainObject(val) ? val : { type: val };
     }
   } else if (process.env.NODE_ENV !== 'production') {
-    warn(
-      `Invalid value for option "props": expected an Array or an Object, ` +
-        `but got ${toRawType(props)}.`,
-      vm,
-    );
+    warn(`Invalid value for option "props": expected an Array or an Object, but got ${toRawType(props)}.`, vm);
   }
   options.props = res;
 }
 
-/**
+/** => 将所有注入规范化为基于对象的格式
  * Normalize all injections into Object-based format
  */
 function normalizeInject(options: Object, vm: ?Component) {
@@ -308,15 +274,11 @@ function normalizeInject(options: Object, vm: ?Component) {
       normalized[key] = isPlainObject(val) ? extend({ from: key }, val) : { from: val };
     }
   } else if (process.env.NODE_ENV !== 'production') {
-    warn(
-      `Invalid value for option "inject": expected an Array or an Object, ` +
-        `but got ${toRawType(inject)}.`,
-      vm,
-    );
+    warn(`Invalid value for option "inject": expected an Array or an Object, but got ${toRawType(inject)}.`, vm);
   }
 }
 
-/**
+/** => 将原始函数指令规范化为对象格式。
  * Normalize raw function directives into object format.
  */
 function normalizeDirectives(options: Object) {
@@ -333,34 +295,34 @@ function normalizeDirectives(options: Object) {
 
 function assertObjectType(name: string, value: any, vm: ?Component) {
   if (!isPlainObject(value)) {
-    warn(
-      `Invalid value for option "${name}": expected an Object, ` + `but got ${toRawType(value)}.`,
-      vm,
-    );
+    warn(`Invalid value for option "${name}": expected an Object, but got ${toRawType(value)}.`, vm);
   }
 }
 
-/**
+/** => 将两个option对象合并到一个新对象中。在实例化和继承中使用的核心实用程序。
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
  */
 export function mergeOptions(parent: Object, child: Object, vm?: Component): Object {
+  // => 在开发环境下，校验组件名
   if (process.env.NODE_ENV !== 'production') {
     checkComponents(child);
   }
 
+  // => 如果传入的是函数（子组件：Vue.options ），则获取它的 options 属性
   if (typeof child === 'function') {
     child = child.options;
   }
 
+  // 规范化 prop / inject / directive
   normalizeProps(child, vm);
   normalizeInject(child, vm);
   normalizeDirectives(child);
 
-  // Apply extends and mixins on the child options,
-  // but only if it is a raw options object that isn't
-  // the result of another mergeOptions call.
-  // Only merged options has the _base property.
+  // Apply extends and mixins on the child options,    => 在子选项上应用扩展和混合
+  // but only if it is a raw options object that isn't => 但是，只有当它是一个原始的 options 对象
+  // the result of another mergeOptions call.          => 而不是另一个 mergeOptions 调用的结果时才会这样
+  // Only merged options has the _base property.       => 只有合并选项具有 _base 属性
   if (!child._base) {
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm);
@@ -394,12 +356,7 @@ export function mergeOptions(parent: Object, child: Object, vm?: Component): Obj
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
  */
-export function resolveAsset(
-  options: Object,
-  type: string,
-  id: string,
-  warnMissing?: boolean,
-): any {
+export function resolveAsset(options: Object, type: string, id: string, warnMissing?: boolean): any {
   /* istanbul ignore if */
   if (typeof id !== 'string') {
     return;
@@ -414,7 +371,7 @@ export function resolveAsset(
   // fallback to prototype chain
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId];
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
-    warn('Failed to resolve ' + type.slice(0, -1) + ': ' + id, options);
+    warn(`Failed to resolve ${type.slice(0, -1)}: ${id}`, options);
   }
   return res;
 }

@@ -208,7 +208,7 @@ function nativeBind(fn: Function, ctx: Object): Function {
 /* => bind方法兼容选取 */
 export const bind = Function.prototype.bind ? nativeBind : polyfillBind;
 
-/** => 将类数组对象转换为实数组。
+/** => 将类数组对象转换为真实数组。
  * Convert an Array-like object to a real Array.
  */
 export function toArray(list: any, start?: number): Array<any> {

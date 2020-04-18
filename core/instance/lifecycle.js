@@ -9,14 +9,7 @@ import { resolveSlots } from './render-helpers/resolve-slots';
 import { toggleObserving } from '../observer/index';
 import { pushTarget, popTarget } from '../observer/dep';
 
-import {
-  warn,
-  noop,
-  remove,
-  emptyObject,
-  validateProp,
-  invokeWithErrorHandling,
-} from '../util/index';
+import { warn, noop, remove, emptyObject, validateProp, invokeWithErrorHandling } from '../util/index';
 
 export let activeInstance: any = null;
 export let isUpdatingChildComponent: boolean = false;
@@ -64,7 +57,7 @@ export function initLifecycle(vm: Component) {
 }
 
 export function lifecycleMixin(Vue: Class<Component>) {
-  Vue.prototype._update = function(vnode: VNode, hydrating?: boolean) {
+  Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this;
     const prevEl = vm.$el;
     const prevVnode = vm._vnode;
@@ -100,7 +93,7 @@ export function lifecycleMixin(Vue: Class<Component>) {
   };
 
   /* => 强制组件重新渲染（只影响实例本身以及插入插槽的子组件） */
-  Vue.prototype.$forceUpdate = function() {
+  Vue.prototype.$forceUpdate = function () {
     const vm: Component = this;
     if (vm._watcher) {
       /* => 通知当前实例上的渲染 Watcher 更新 */
@@ -109,7 +102,7 @@ export function lifecycleMixin(Vue: Class<Component>) {
   };
 
   /* => 完全销毁一个 vm 实例 */
-  Vue.prototype.$destroy = function() {
+  Vue.prototype.$destroy = function () {
     const vm: Component = this;
 
     /* => 说明当前 vm 实例正在被销毁（防止重复销毁） */
@@ -186,11 +179,7 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if => 可忽略 */
       /* => 判断模板是否存在且模板字符串是否不以 # 开头/是否含有 el / el元素 */
-      if (
-        (vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
-        vm.$options.el ||
-        el
-      ) {
+      if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') || vm.$options.el || el) {
         /* => 在模板编译器不可用的情况下，您使用的是仅运行时 build 的Vue。将模板预编译为 render 函数，或使用包含编译器的 build 文件 */
         warn(
           'You are using the runtime-only build of Vue where the template ' +

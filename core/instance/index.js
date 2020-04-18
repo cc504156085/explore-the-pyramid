@@ -5,7 +5,7 @@ import { eventsMixin } from './events';
 import { lifecycleMixin } from './lifecycle';
 import { warn } from '../util/index';
 
-/* Vue 的构造函数 */
+/* => Vue 的构造函数 */
 function Vue(options) {
   /* => 判断 Vue 实例是否是 new 出来的 */
   if (process.env.NODE_ENV !== 'production' && !(this instanceof Vue)) {

@@ -32,15 +32,13 @@ export function def(obj: Object, key: string, val: any, enumerable?: boolean) {
  */
 const bailRE = new RegExp(`[^${unicodeRegExp.source}.$_\\d]`);
 export function parsePath(path: string): any {
-  if (bailRE.test(path)) {
-    return;
-  }
+  if (bailRE.test(path)) return;
 
   /* => 以 . 分割 */
   const segments = path.split('.');
 
   /* => 返回一个函数 */
-  return function(obj) {
+  return function (obj) {
     for (let i = 0; i < segments.length; i++) {
       if (!obj) return;
 

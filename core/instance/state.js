@@ -73,10 +73,7 @@ function initProps(vm: Component, propsOptions: Object) {
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key);
       if (isReservedAttribute(hyphenatedKey) || config.isReservedAttr(hyphenatedKey)) {
-        warn(
-          `"${hyphenatedKey}" is a reserved attribute and cannot be used as component prop.`,
-          vm,
-        );
+        warn(`"${hyphenatedKey}" is a reserved attribute and cannot be used as component prop.`, vm);
       }
       defineReactive(props, key, value, () => {
         if (!isRoot && !isUpdatingChildComponent) {
@@ -115,11 +112,7 @@ function initData(vm: Component) {
     /* => 如果不是普通对象，将data赋值为一个空对象，且在开发环境下报警告 => 数据函数应该返回一个对象 */
     data = {};
     process.env.NODE_ENV !== 'production' &&
-      warn(
-        'data functions should return an object:\n' +
-          'https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function',
-        vm,
-      );
+      warn('data functions should return an object:\n' + 'https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function', vm);
   }
 
   // proxy data on instance => 在实例上代理 data ，可通过 this.xxx 访问 data 中的属性
@@ -138,11 +131,7 @@ function initData(vm: Component) {
     if (props && hasOwn(props, key)) {
       /* => 数据属性“${key}”已声明为 prop 。改为使用 prop 默认值。 */
       process.env.NODE_ENV !== 'production' &&
-        warn(
-          `The data property "${key}" is already declared as a prop. ` +
-            `Use prop default value instead.`,
-          vm,
-        );
+        warn(`The data property "${key}" is already declared as a prop. ` + `Use prop default value instead.`, vm);
     } else if (!isReserved(key)) {
       /* => 将不是以 $ _ 开头的属性代理到实例 vm 上 */
       proxy(vm, `_data`, key);
@@ -205,9 +194,7 @@ function initComputed(vm: Component, computed: Object) {
 export function defineComputed(target: any, key: string, userDef: Object | Function) {
   const shouldCache = !isServerRendering();
   if (typeof userDef === 'function') {
-    sharedPropertyDefinition.get = shouldCache
-      ? createComputedGetter(key)
-      : createGetterInvoker(userDef);
+    sharedPropertyDefinition.get = shouldCache ? createComputedGetter(key) : createGetterInvoker(userDef);
     sharedPropertyDefinition.set = noop;
   } else {
     sharedPropertyDefinition.get = userDef.get
@@ -218,7 +205,7 @@ export function defineComputed(target: any, key: string, userDef: Object | Funct
     sharedPropertyDefinition.set = userDef.set || noop;
   }
   if (process.env.NODE_ENV !== 'production' && sharedPropertyDefinition.set === noop) {
-    sharedPropertyDefinition.set = function() {
+    sharedPropertyDefinition.set = function () {
       warn(`Computed property "${key}" was assigned to but it has no setter.`, this);
     };
   }
@@ -252,8 +239,7 @@ function initMethods(vm: Component, methods: Object) {
     if (process.env.NODE_ENV !== 'production') {
       if (typeof methods[key] !== 'function') {
         warn(
-          `Method "${key}" has type "${typeof methods[key]}" in the component definition. ` +
-            `Did you reference the function correctly?`,
+          `Method "${key}" has type "${typeof methods[key]}" in the component definition. ` + `Did you reference the function correctly?`,
           vm,
         );
       }
@@ -262,8 +248,7 @@ function initMethods(vm: Component, methods: Object) {
       }
       if (key in vm && isReserved(key)) {
         warn(
-          `Method "${key}" conflicts with an existing Vue instance method. ` +
-            `Avoid defining component methods that start with _ or $.`,
+          `Method "${key}" conflicts with an existing Vue instance method. ` + `Avoid defining component methods that start with _ or $.`,
         );
       }
     }
@@ -302,21 +287,21 @@ export function stateMixin(Vue: Class<Component>) {
   // the object here.
 
   const dataDef = {};
-  dataDef.get = function() {
+  dataDef.get = function () {
     return this._data;
   };
 
   const propsDef = {};
-  propsDef.get = function() {
+  propsDef.get = function () {
     return this._props;
   };
 
   if (process.env.NODE_ENV !== 'production') {
-    dataDef.set = function() {
+    dataDef.set = function () {
       /* => 避免替换实例根 $data。请改用嵌套数据属性。 */
       warn('Avoid replacing instance root $data. ' + 'Use nested data properties instead.', this);
     };
-    propsDef.set = function() {
+    propsDef.set = function () {
       /* => $props 是只读的 */
       warn(`$props is readonly.`, this);
     };
@@ -330,7 +315,7 @@ export function stateMixin(Vue: Class<Component>) {
   Vue.prototype.$set = set;
   Vue.prototype.$delete = del;
 
-  Vue.prototype.$watch = function(expOrFn: string | Function, cb: any, options?: Object): Function {
+  Vue.prototype.$watch = function (expOrFn: string | Function, cb: any, options?: Object): Function {
     const vm: Component = this;
 
     /* => 如果第二个参数是一个纯对象 */

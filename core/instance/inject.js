@@ -15,7 +15,7 @@ export function initInjections(vm: Component) {
   const result = resolveInject(vm.$options.inject, vm);
   if (result) {
     toggleObserving(false);
-    Object.keys(result).forEach(key => {
+    Object.keys(result).forEach((key) => {
       /* istanbul ignore else */
       if (process.env.NODE_ENV !== 'production') {
         defineReactive(vm, key, result[key], () => {
@@ -56,8 +56,7 @@ export function resolveInject(inject: any, vm: Component): ?Object {
       if (!source) {
         if ('default' in inject[key]) {
           const provideDefault = inject[key].default;
-          result[key] =
-            typeof provideDefault === 'function' ? provideDefault.call(vm) : provideDefault;
+          result[key] = typeof provideDefault === 'function' ? provideDefault.call(vm) : provideDefault;
         } else if (process.env.NODE_ENV !== 'production') {
           warn(`Injection "${key}" not found`, vm);
         }

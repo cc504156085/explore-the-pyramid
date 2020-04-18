@@ -136,7 +136,7 @@ export function nextTick(cb?: Function, ctx?: Object) {
 
   // 如果没有传入参数，则返回一个 Promise
   if (!cb && typeof Promise !== 'undefined') {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       _resolve = resolve;
     });
   }

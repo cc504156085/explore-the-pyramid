@@ -1,12 +1,6 @@
 /* @flow */
 
-import {
-  tip,
-  toArray,
-  hyphenate,
-  formatComponentName,
-  invokeWithErrorHandling,
-} from '../util/index';
+import { tip, toArray, hyphenate, formatComponentName, invokeWithErrorHandling } from '../util/index';
 import { updateListeners } from '../vdom/helpers/index';
 
 export function initEvents(vm: Component) {
@@ -56,7 +50,7 @@ export function eventsMixin(Vue: Class<Component>) {
   const hookRE = /^hook:/;
 
   /* => 订阅 */
-  Vue.prototype.$on = function(event: string | Array<string>, fn: Function): Component {
+  Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
     const vm: Component = this;
 
     /* => 如果是一个数组，遍历绑定 */
@@ -80,7 +74,7 @@ export function eventsMixin(Vue: Class<Component>) {
   };
 
   /* => 触发后就卸载 */
-  Vue.prototype.$once = function(event: string, fn: Function): Component {
+  Vue.prototype.$once = function (event: string, fn: Function): Component {
     const vm: Component = this;
 
     /* => 新建一个函数 */
@@ -102,7 +96,7 @@ export function eventsMixin(Vue: Class<Component>) {
   };
 
   /* => 卸载 */
-  Vue.prototype.$off = function(event?: string | Array<string>, fn?: Function): Component {
+  Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {
     const vm: Component = this;
 
     // all => 如果没有提供参数，则清空事件池（新赋值为一个空对象）
@@ -157,7 +151,7 @@ export function eventsMixin(Vue: Class<Component>) {
   };
 
   /* => 发布 */
-  Vue.prototype.$emit = function(event: string): Component {
+  Vue.prototype.$emit = function (event: string): Component {
     const vm: Component = this;
 
     if (process.env.NODE_ENV !== 'production') {

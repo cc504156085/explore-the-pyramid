@@ -11,12 +11,7 @@ type PropOptions = {
   validator: ?Function,
 };
 
-export function validateProp(
-  key: string,
-  propOptions: Object,
-  propsData: Object,
-  vm?: Component,
-): any {
+export function validateProp(key: string, propOptions: Object, propsData: Object, vm?: Component): any {
   const prop = propOptions[key];
   const absent = !hasOwn(propsData, key);
   let value = propsData[key];
@@ -76,12 +71,7 @@ function getPropDefaultValue(vm: ?Component, prop: PropOptions, key: string): an
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
-  if (
-    vm &&
-    vm.$options.propsData &&
-    vm.$options.propsData[key] === undefined &&
-    vm._props[key] !== undefined
-  ) {
+  if (vm && vm.$options.propsData && vm.$options.propsData[key] === undefined && vm._props[key] !== undefined) {
     return vm._props[key];
   }
   // call factory function for non-Function types
@@ -184,19 +174,13 @@ function getTypeIndex(type, expectedTypes): number {
 }
 
 function getInvalidTypeMessage(name, value, expectedTypes) {
-  let message =
-    `Invalid prop: type check failed for prop "${name}".` +
-    ` Expected ${expectedTypes.map(capitalize).join(', ')}`;
+  let message = `Invalid prop: type check failed for prop "${name}". Expected ${expectedTypes.map(capitalize).join(', ')}`;
   const expectedType = expectedTypes[0];
   const receivedType = toRawType(value);
   const expectedValue = styleValue(value, expectedType);
   const receivedValue = styleValue(value, receivedType);
   // check if we need to specify expected value
-  if (
-    expectedTypes.length === 1 &&
-    isExplicable(expectedType) &&
-    !isBoolean(expectedType, receivedType)
-  ) {
+  if (expectedTypes.length === 1 && isExplicable(expectedType) && !isBoolean(expectedType, receivedType)) {
     message += ` with value ${expectedValue}`;
   }
   message += `, got ${receivedType} `;
@@ -219,9 +203,9 @@ function styleValue(value, type) {
 
 function isExplicable(value) {
   const explicitTypes = ['string', 'number', 'boolean'];
-  return explicitTypes.some(elem => value.toLowerCase() === elem);
+  return explicitTypes.some((elem) => value.toLowerCase() === elem);
 }
 
 function isBoolean(...args) {
-  return args.some(elem => elem.toLowerCase() === 'boolean');
+  return args.some((elem) => elem.toLowerCase() === 'boolean');
 }

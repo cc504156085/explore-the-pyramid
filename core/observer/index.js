@@ -25,6 +25,7 @@ const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
  */
 export let shouldObserve: boolean = true;
 
+/* => 切换观察 */
 export function toggleObserving(value: boolean) {
   shouldObserve = value;
 }
@@ -94,8 +95,6 @@ export class Observer {
   }
 }
 
-// helpers
-
 /** => 通过拦截原型方法，观测数组
  * Augment a target Object or Array by intercepting
  * the prototype chain using __proto__
@@ -156,13 +155,7 @@ export function observe(value: any, asRootData: ?boolean): Observer | void {
 /** => 在对象上定义响应式属性
  * Define a reactive property on an Object.
  */
-export function defineReactive(
-  obj: Object,
-  key: string,
-  val: any,
-  customSetter?: ?Function,
-  shallow?: boolean,
-) {
+export function defineReactive(obj: Object, key: string, val: any, customSetter?: ?Function, shallow?: boolean) {
   /* => 给每一个 key 属性设置一个依赖收集池 */
   const dep = new Dep();
 
@@ -284,10 +277,7 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
     /* => 避免在运行时向 Vue 实例或其根 $data 添加响应式性属性 - 在 data 选项中预先声明它。 */
     /* => 如 this.$set(this.$data, key, val) 这是不合法的 */
     process.env.NODE_ENV !== 'production' &&
-      warn(
-        'Avoid adding reactive properties to a Vue instance or its root $data ' +
-          'at runtime - declare it upfront in the data option.',
-      );
+      warn('Avoid adding reactive properties to a Vue instance or its root $data at runtime - declare it upfront in the data option.');
     return val;
   }
 
@@ -326,25 +316,18 @@ export function del(target: Array<any> | Object, key: any) {
   const ob = target.__ob__;
   if (target._isVue || (ob && ob.vmCount)) {
     /* => 避免删除 Vue 实例或其根 $data 上的属性-只需将其设置为空。 */
-    process.env.NODE_ENV !== 'production' &&
-      warn(
-        'Avoid deleting properties on a Vue instance or its root $data ' + '- just set it to null.',
-      );
+    process.env.NODE_ENV !== 'production' && warn('Avoid deleting properties on a Vue instance or its root $data - just set it to null.');
     return;
   }
 
   /* => 若 target 上没有该 key，终止即可 */
-  if (!hasOwn(target, key)) {
-    return;
-  }
+  if (!hasOwn(target, key)) return;
 
   /* => 删除该 key */
   delete target[key];
 
   /* => 如果不是响应式的，就没必要通知更新 */
-  if (!ob) {
-    return;
-  }
+  if (!ob) return;
 
   /* => 手动通知依赖更新 */
   ob.dep.notify();
