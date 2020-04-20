@@ -56,12 +56,12 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue;
 
-  // => 初始化内置组件 keep-alive
+  // => 初始化内置组件 keep-alive ，将内置组件合并至 components 选项
   extend(Vue.options.components, builtInComponents);
 
   // => 初始化全局 API
   initUse(Vue); // => 初始化插件注册
   initMixin(Vue); // => 初始化混入
   initExtend(Vue); // => 初始化扩展
-  initAssetRegisters(Vue);// => 初始化资源注册
+  initAssetRegisters(Vue); // => 初始化资源注册
 }

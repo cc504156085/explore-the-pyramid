@@ -40,12 +40,14 @@ function createOnceHandler(event, fn) {
   };
 }
 
+/* => 更新组件监听器 */
 export function updateComponentListeners(vm: Component, listeners: Object, oldListeners: ?Object) {
   target = vm;
   updateListeners(listeners, oldListeners || {}, add, remove, createOnceHandler, vm);
   target = undefined;
 }
 
+/* => 事件混入 */
 export function eventsMixin(Vue: Class<Component>) {
   const hookRE = /^hook:/;
 

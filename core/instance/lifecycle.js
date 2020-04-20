@@ -194,37 +194,14 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
     }
   }
 
+  /* => 调用生命周期 hook */
   callHook(vm, 'beforeMount');
 
-  let updateComponent;
-
-  /* istanbul ignore if => 可忽略*/
-  if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
-    updateComponent = () => {
-      const name = vm._name;
-      const id = vm._uid;
-      const startTag = `vue-perf-start:${id}`;
-      const endTag = `vue-perf-end:${id}`;
-
-      mark(startTag);
-      const vnode = vm._render();
-      mark(endTag);
-      measure(`vue ${name} render`, startTag, endTag);
-
-      mark(startTag);
-      vm._update(vnode, hydrating);
-      mark(endTag);
-      measure(`vue ${name} patch`, startTag, endTag);
-    };
-  } else {
-    /* => --------------------------------------------------------- */
-    /* => 执行 _render 方法，返回 VNode 作为第一个参数，执行 _update 更新 DOM */
-    updateComponent = () => {
-      /* => 对新 VNode 和旧 VNode 进行 patch ，更新 DOM */
-      vm._update(vm._render(), hydrating);
-    };
-    /* => --------------------------------------------------------- */
-  }
+  /* => 执行 _render 方法，返回 VNode 作为第一个参数，执行 _update 更新 DOM */
+  const updateComponent = () => {
+    /* => 对新 VNode 和旧 VNode 进行 patch ，更新 DOM */
+    vm._update(vm._render(), hydrating);
+  };
 
   /* => 我们在 Watcher 的构造函数中将其设置为 vm._watcher
    * => 因为 Watcher 的初始补丁可能调用 $forceUpdate （例如，在子组件的 mount hook）
@@ -389,7 +366,7 @@ export function deactivateChildComponent(vm: Component, direct?: boolean) {
 }
 
 export function callHook(vm: Component, hook: string) {
-  // #7573 disable dep collection when invoking lifecycle hooks => 调用生命周期钩子时禁用dep集合
+  // #7573 disable dep collection when invoking lifecycle hooks => 调用生命周期钩子时禁用 dep 集合
   pushTarget();
   const handlers = vm.$options[hook];
   const info = `${hook} hook`;

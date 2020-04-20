@@ -12,23 +12,14 @@ import { extend, mergeOptions, formatComponentName } from '../util/index';
 
 let uid = 0;
 
-/* => 混入 init 方法 */
+/* => 初始化混入 */
 export function initMixin(Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
-    /* 当前Vue实例 */
+    /* => 当前Vue实例 */
     const vm: Component = this;
 
     // a uid => 每个Vue实例对应一个ID
     vm._uid = uid++;
-
-    /* => 用于测试性能 */
-    let startTag, endTag;
-    /* istanbul ignore if => 可忽略 */
-    if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
-      startTag = `vue-perf-start:${vm._uid}`;
-      endTag = `vue-perf-end:${vm._uid}`;
-      mark(startTag);
-    }
 
     // a flag to avoid this being observed => 标记该实例不需要被观测
     vm._isVue = true;
@@ -45,7 +36,7 @@ export function initMixin(Vue: Class<Component>) {
       vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm);
     }
 
-    /* istanbul ignore else => 可忽略if */
+    /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       initProxy(vm);
     } else {
@@ -63,13 +54,6 @@ export function initMixin(Vue: Class<Component>) {
     initState(vm); // => 初始化数据（data，props）
     initProvide(vm); // resolve provide after data/props => 在初始化数据之后解析注入的数据
     callHook(vm, 'created'); // => 调用第二个生命周期hook，到此，所有的数据、事件、状态相关的东西已经初始化完毕
-
-    /* istanbul ignore if => 可忽略 */
-    if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
-      vm._name = formatComponentName(vm, false);
-      mark(endTag);
-      measure(`vue ${vm._name} init`, startTag, endTag);
-    }
 
     /* => 以上代码用于创建组件（初始化一个组件所需要的各个东西） */
     if (vm.$options.el) {

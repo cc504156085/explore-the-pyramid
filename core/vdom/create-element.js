@@ -59,17 +59,9 @@ export function _createElement(
     return createEmptyVNode();
   }
   // warn against non-primitive key
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    isDef(data) &&
-    isDef(data.key) &&
-    !isPrimitive(data.key)
-  ) {
+  if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.key) && !isPrimitive(data.key)) {
     if (!__WEEX__ || !('@binding' in data.key)) {
-      warn(
-        'Avoid using non-primitive value as key, ' + 'use string/number value instead.',
-        context,
-      );
+      warn('Avoid using non-primitive value as key, use string/number value instead.', context);
     }
   }
   // support single function children as default scoped slot
@@ -90,23 +82,10 @@ export function _createElement(
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn)) {
-        warn(
-          `The .native modifier for v-on is only valid on components but it was used on <${tag}>.`,
-          context,
-        );
+        warn(`The .native modifier for v-on is only valid on components but it was used on <${tag}>.`, context);
       }
-      vnode = new VNode(
-        config.parsePlatformTagName(tag),
-        data,
-        children,
-        undefined,
-        undefined,
-        context,
-      );
-    } else if (
-      (!data || !data.pre) &&
-      isDef((Ctor = resolveAsset(context.$options, 'components', tag)))
-    ) {
+      vnode = new VNode(config.parsePlatformTagName(tag), data, children, undefined, undefined, context);
+    } else if ((!data || !data.pre) && isDef((Ctor = resolveAsset(context.$options, 'components', tag)))) {
       // component
       vnode = createComponent(Ctor, data, context, children, tag);
     } else {

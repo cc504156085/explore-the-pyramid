@@ -23,44 +23,22 @@ export function initRender(vm: Component) {
   vm.$slots = resolveSlots(options._renderChildren, renderContext);
   vm.$scopedSlots = emptyObject;
 
-  // bind the createElement fn to this instance => 将createElement fn绑定到此实例
-  // so that we get proper render context inside it. => 以便在其中获得正确的render上下文
-  // args order: tag, data, children, normalizationType, alwaysNormalize => args顺序：标记、数据、子项、规格化类型
-  // internal version is used by render functions compiled from templates => alwaysNormalize内部版本由从模板编译的render函数使用
+  // bind the createElement fn to this instance => 将 createElement fn 绑定到此实例
+  // so that we get proper render context inside it. => 以便在其中获得正确的 render 上下文
+  // args order: tag, data, children, normalizationType, alwaysNormalize => args 顺序：标记、数据、子项、规格化类型
+  // internal version is used by render functions compiled from templates => alwaysNormalize 内部版本由从模板编译的 render 函数使用
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false);
 
   // normalization is always applied for the public version. => 规范化始终应用于公共版本
   // used in user-written render functions. => 用于用户编写的render函数
   vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true);
 
-  // $attrs & $listeners are exposed for easier HOC creation. => $attrs和$listeners被公开，以便更轻松地创建hook
-  // they need to be reactive so that HOCs using them are always updated => 它们必须是被动的，这样使用它们的hooks总是更新的
+  // $attrs & $listeners are exposed for easier HOC creation. => $attrs 和 $listeners 被公开，以便更轻松地创建 hook
+  // they need to be reactive so that HOCs using them are always updated => 它们必须是被动的，这样使用它们的 hooks 总是更新的
   const parentData = parentVnode && parentVnode.data;
 
-  /* istanbul ignore else => 性能测试忽略项 */
-  if (process.env.NODE_ENV !== 'production') {
-    defineReactive(
-      vm,
-      '$attrs',
-      (parentData && parentData.attrs) || emptyObject,
-      () => {
-        !isUpdatingChildComponent && warn(`$attrs is readonly.`, vm);
-      },
-      true,
-    );
-    defineReactive(
-      vm,
-      '$listeners',
-      options._parentListeners || emptyObject,
-      () => {
-        !isUpdatingChildComponent && warn(`$listeners is readonly.`, vm);
-      },
-      true,
-    );
-  } else {
-    defineReactive(vm, '$attrs', (parentData && parentData.attrs) || emptyObject, null, true);
-    defineReactive(vm, '$listeners', options._parentListeners || emptyObject, null, true);
-  }
+  defineReactive(vm, '$attrs', (parentData && parentData.attrs) || emptyObject, null, true);
+  defineReactive(vm, '$listeners', options._parentListeners || emptyObject, null, true);
 }
 
 export let currentRenderingInstance: Component | null = null;
