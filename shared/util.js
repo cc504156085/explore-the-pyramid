@@ -30,12 +30,7 @@ export function isFalse(v: any): boolean %checks {
  * Check if value is primitive.
  */
 export function isPrimitive(value: any): boolean %checks {
-  return (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'symbol' ||
-    typeof value === 'boolean'
-  );
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'symbol' || typeof value === 'boolean';
 }
 
 /** => 快速对象（数组、正则、函数）检查，当我们知道值是符合 JSON 的类型时，它主要用于区分对象和原始值。
@@ -113,7 +108,7 @@ export function makeMap(str: string, expectsLowerCase?: boolean): (key: string) 
   for (let i = 0; i < list.length; i++) {
     map[list[i]] = true;
   }
-  return expectsLowerCase ? val => map[val.toLowerCase()] : val => map[val];
+  return expectsLowerCase ? (val) => map[val.toLowerCase()] : (val) => map[val];
 }
 
 /** => 检查标记是否为内置标记
@@ -157,7 +152,7 @@ export function cached<F: Function>(fn: F): F {
   }: any);
 }
 
-/** => 转化成驼峰变量。
+/** => 将连字符变量转化成驼峰变量。
  * Camelize a hyphen-delimited string.
  */
 const camelizeRE = /-(\w)/g;
@@ -200,12 +195,12 @@ function polyfillBind(fn: Function, ctx: Object): Function {
   return boundFn;
 }
 
-/* => 原生bind方法 */
+/* => 原生 bind 方法 */
 function nativeBind(fn: Function, ctx: Object): Function {
   return fn.bind(ctx);
 }
 
-/* => bind方法兼容选取 */
+/* => bind 方法兼容选取 */
 export const bind = Function.prototype.bind ? nativeBind : polyfillBind;
 
 /** => 将类数组对象转换为真实数组。
@@ -306,7 +301,7 @@ export function looseEqual(a: any, b: any): boolean {
         const keysB = Object.keys(b);
 
         /* => 比较两个值的属性个数是否相等，再递归比较属性值是否相等 */
-        return keysA.length === keysB.length && keysA.every(key => looseEqual(a[key], b[key]));
+        return keysA.length === keysB.length && keysA.every((key) => looseEqual(a[key], b[key]));
       } else {
         /* istanbul ignore next */
         return false;
@@ -344,7 +339,7 @@ export function looseIndexOf(arr: Array<mixed>, val: mixed): number {
 export function once(fn: Function): Function {
   /* => 利用闭包机制，初始化一个false标记 */
   let called = false;
-  return function() {
+  return function () {
     /* => 在调用该函数执行后，判断标记 */
     if (!called) {
       /* => 进入判断后将其标记为true，之后再调用都进不来该判断 */

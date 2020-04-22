@@ -12,27 +12,15 @@ export function baseWarn(msg: string, range?: Range) {
 /* eslint-enable no-unused-vars */
 
 export function pluckModuleFunction<F: Function>(modules: ?Array<Object>, key: string): Array<F> {
-  return modules ? modules.map(m => m[key]).filter(_ => _) : [];
+  return modules ? modules.map((m) => m[key]).filter((_) => _) : [];
 }
 
-export function addProp(
-  el: ASTElement,
-  name: string,
-  value: string,
-  range?: Range,
-  dynamic?: boolean,
-) {
+export function addProp(el: ASTElement, name: string, value: string, range?: Range, dynamic?: boolean) {
   (el.props || (el.props = [])).push(rangeSetItem({ name, value, dynamic }, range));
   el.plain = false;
 }
 
-export function addAttr(
-  el: ASTElement,
-  name: string,
-  value: any,
-  range?: Range,
-  dynamic?: boolean,
-) {
+export function addAttr(el: ASTElement, name: string, value: any, range?: Range, dynamic?: boolean) {
   const attrs = dynamic ? el.dynamicAttrs || (el.dynamicAttrs = []) : el.attrs || (el.attrs = []);
   attrs.push(rangeSetItem({ name, value, dynamic }, range));
   el.plain = false;
@@ -88,11 +76,7 @@ export function addHandler(
   // warn prevent and passive modifier
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && warn && modifiers.prevent && modifiers.passive) {
-    warn(
-      "passive and prevent can't be used together. " +
-        "Passive handler can't prevent default event.",
-      range,
-    );
+    warn("passive and prevent can't be used together. " + "Passive handler can't prevent default event.", range);
   }
 
   // normalize click.right and click.middle since they don't actually fire

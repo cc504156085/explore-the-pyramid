@@ -28,23 +28,25 @@ export function initLifecycle(vm: Component) {
   // locate first non-abstract parent => 定位第一个非抽象父级
   let parent = options.parent;
   if (parent && !options.abstract) {
-    /* => 循环拿到父级 */
+    /* => 循环拿到父级，如果父级还是抽象类，则继续自底向上循环 */
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent;
     }
-    /* => 如果父级存在，将自己存入父级的子列表中 */
+
+    /* => 将自己存入父级的子列表中 */
     parent.$children.push(vm);
   }
 
   /* => 说明子组件创建时，父组件已经存在 */
   vm.$parent = parent;
 
-  /* => 根实例，如果没有父级，自己就是根实例 */
+  /* => 当前组件树的根实例，如果没有父级，自己就是根实例 */
   vm.$root = parent ? parent.$root : vm;
 
   /* => 子实例列表 */
   vm.$children = [];
 
+  /* => dom 列表 */
   vm.$refs = {};
 
   /* => 私有属性初始化 */

@@ -48,7 +48,7 @@ const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) &
 
 function decodeAttr(value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr;
-  return value.replace(re, match => decodingMap[match]);
+  return value.replace(re, (match) => decodingMap[match]);
 }
 
 export function parseHTML(html, options) {
@@ -119,12 +119,7 @@ export function parseHTML(html, options) {
       let text, rest, next;
       if (textEnd >= 0) {
         rest = html.slice(textEnd);
-        while (
-          !endTag.test(rest) &&
-          !startTagOpen.test(rest) &&
-          !comment.test(rest) &&
-          !conditionalComment.test(rest)
-        ) {
+        while (!endTag.test(rest) && !startTagOpen.test(rest) && !comment.test(rest) && !conditionalComment.test(rest)) {
           // < in plain text, be forgiving and treat it as text
           next = rest.indexOf('<', 1);
           if (next < 0) break;
@@ -148,10 +143,8 @@ export function parseHTML(html, options) {
     } else {
       let endTagLength = 0;
       const stackedTag = lastTag.toLowerCase();
-      const reStackedTag =
-        reCache[stackedTag] ||
-        (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'));
-      const rest = html.replace(reStackedTag, function(all, text, endTag) {
+      const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'));
+      const rest = html.replace(reStackedTag, function (all, text, endTag) {
         endTagLength = endTag.length;
         if (!isPlainTextElement(stackedTag) && stackedTag !== 'noscript') {
           text = text
@@ -200,10 +193,7 @@ export function parseHTML(html, options) {
       };
       advance(start[0].length);
       let end, attr;
-      while (
-        !(end = html.match(startTagClose)) &&
-        (attr = html.match(dynamicArgAttribute) || html.match(attribute))
-      ) {
+      while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
         attr.start = index;
         advance(attr[0].length);
         attr.end = index;
@@ -239,9 +229,7 @@ export function parseHTML(html, options) {
       const args = match.attrs[i];
       const value = args[3] || args[4] || args[5] || '';
       const shouldDecodeNewlines =
-        tagName === 'a' && args[1] === 'href'
-          ? options.shouldDecodeNewlinesForHref
-          : options.shouldDecodeNewlines;
+        tagName === 'a' && args[1] === 'href' ? options.shouldDecodeNewlinesForHref : options.shouldDecodeNewlines;
       attrs[i] = {
         name: args[1],
         value: decodeAttr(value, shouldDecodeNewlines),

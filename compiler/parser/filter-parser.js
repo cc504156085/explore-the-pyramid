@@ -24,14 +24,7 @@ export function parseFilters(exp: string): string {
       if (c === 0x60 && prev !== 0x5c) inTemplateString = false;
     } else if (inRegex) {
       if (c === 0x2f && prev !== 0x5c) inRegex = false;
-    } else if (
-      c === 0x7c && // pipe
-      exp.charCodeAt(i + 1) !== 0x7c &&
-      exp.charCodeAt(i - 1) !== 0x7c &&
-      !curly &&
-      !square &&
-      !paren
-    ) {
+    } else if (c === 0x7c /* pipe */ && exp.charCodeAt(i + 1) !== 0x7c && exp.charCodeAt(i - 1) !== 0x7c && !curly && !square && !paren) {
       if (expression === undefined) {
         // first filter, end of expression
         lastFilterIndex = i + 1;

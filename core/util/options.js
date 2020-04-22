@@ -225,35 +225,52 @@ export function validateComponentName(name: string) {
   }
 }
 
-/** => 确保所有的道具选项语法都规范化为基于对象的格式。
+/** => 确保所有的 props 选项语法都规范化为基于对象的格式。
  * Ensure all props option syntax are normalized into the
  * Object-based format.
  */
 function normalizeProps(options: Object, vm: ?Component) {
   const props = options.props;
+
+  /* => 未设置 props 选项，直接结束即可 */
   if (!props) return;
+
   const res = {};
   let i, val, name;
+
+  /* => 如果 props 是一个数组 */
   if (Array.isArray(props)) {
     i = props.length;
     while (i--) {
       val = props[i];
       if (typeof val === 'string') {
+        /* => 将 prop-prop 转换成 propProp 驼峰形式 */
         name = camelize(val);
+
+        /* => 规格化成对象，类型默认为 null */
         res[name] = { type: null };
       } else if (process.env.NODE_ENV !== 'production') {
+        /* => 使用数组语法时，prop 必须是字符串。 */
         warn('props must be strings when using array syntax.');
       }
     }
   } else if (isPlainObject(props)) {
+    /* => 如果 props 是一个纯对象 */
     for (const key in props) {
       val = props[key];
+
+      /* => 将 prop-prop 转换成 propProp 驼峰形式 */
       name = camelize(key);
+
+      /* => 若属性值是一个纯对象，延用即可，否则（{ prop: Number } 定义 prop 属性的类型）封装成对象 */
       res[name] = isPlainObject(val) ? val : { type: val };
     }
   } else if (process.env.NODE_ENV !== 'production') {
+    /* => 选项 props 的值无效：期望数组或对象，但得到 toRawType(props) 。 */
     warn(`Invalid value for option "props": expected an Array or an Object, but got ${toRawType(props)}.`, vm);
   }
+
+  /* => 使用规范化后的 props 覆盖原来的 props */
   options.props = res;
 }
 

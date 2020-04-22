@@ -29,6 +29,7 @@ const sharedPropertyDefinition = {
   set: noop,
 };
 
+/* => 状态（数据）代理 */
 export function proxy(target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter() {
     return this[sourceKey][key];
@@ -39,14 +40,18 @@ export function proxy(target: Object, sourceKey: string, key: string) {
   Object.defineProperty(target, key, sharedPropertyDefinition);
 }
 
+/* => 状态（数据）初始化 */
 export function initState(vm: Component) {
+  /* => 存放当前组件中所有的 Watcher （ $watch / watch ） */
   vm._watchers = [];
+
   const opts = vm.$options;
   if (opts.props) initProps(vm, opts.props);
   if (opts.methods) initMethods(vm, opts.methods);
   if (opts.data) {
     initData(vm);
   } else {
+    /* => 如果没有提供 data ，观测空对象并挂载在实例上 */
     observe((vm._data = {}), true /* asRootData */);
   }
   if (opts.computed) initComputed(vm, opts.computed);
@@ -55,6 +60,7 @@ export function initState(vm: Component) {
   }
 }
 
+/* => 初始化 options props */
 function initProps(vm: Component, propsOptions: Object) {
   const propsData = vm.$options.propsData || {};
   const props = (vm._props = {});
@@ -65,7 +71,7 @@ function initProps(vm: Component, propsOptions: Object) {
   const keys = (vm.$options._propKeys = []);
   const isRoot = !vm.$parent;
 
-  // root instance props should be converted => 根实例的 props 应该被转换
+  // root instance props should be converted => 根实例的 props 应该被转换成响应式
   if (!isRoot) {
     toggleObserving(false);
   }
@@ -98,6 +104,7 @@ function initProps(vm: Component, propsOptions: Object) {
         }
       });
     } else {
+      /* => 将 props 定义成响应式的数据 */
       defineReactive(props, key, value);
     }
 
@@ -114,7 +121,7 @@ function initProps(vm: Component, propsOptions: Object) {
   toggleObserving(true);
 }
 
-/* => 初始化数据，参数为组件的实例vm */
+/* => 初始化 options data */
 function initData(vm: Component) {
   /* => 拿到实例上的数据 */
   let data = vm.$options.data;
@@ -139,7 +146,7 @@ function initData(vm: Component) {
     const key = keys[i];
     if (process.env.NODE_ENV !== 'production') {
       if (methods && hasOwn(methods, key)) {
-        /* => 方法“${key}”已定义为 data 属性。 */
+        /* => 方法 key 已定义为 data 属性。 */
         warn(`Method "${key}" has already been defined as a data property.`, vm);
       }
     }
@@ -157,6 +164,7 @@ function initData(vm: Component) {
   observe(data, true /* asRootData => 是否为根数据（true） */);
 }
 
+/* => 获取数据 */
 export function getData(data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters => 调用数据获取程序时禁用 dep 收集
   pushTarget();
@@ -171,8 +179,10 @@ export function getData(data: Function, vm: Component): any {
   }
 }
 
+/* => 计算属性观察者选项 */
 const computedWatcherOptions = { lazy: true };
 
+/* => 初始化 options computed */
 function initComputed(vm: Component, computed: Object) {
   /* => 创建一个容器，用来收集依赖 */
   const watchers = (vm._computedWatchers = Object.create(null));
@@ -183,7 +193,7 @@ function initComputed(vm: Component, computed: Object) {
   for (const key in computed) {
     const userDef = computed[key];
 
-    /* => 若是一个函数，将其当做 getter ，若是对象，取它的 get */
+    /* => 若是一个函数，将其当做 getter ，若是对象，需要提供 get 方法 */
     const getter = typeof userDef === 'function' ? userDef : userDef.get;
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       /* => 计算属性 key 缺少 Getter 。 */
@@ -191,8 +201,9 @@ function initComputed(vm: Component, computed: Object) {
     }
 
     if (!isSSR) {
-      // create internal watcher for the computed property. => 为计算属性创建内部监视程序。
-      watchers[key] = new Watcher(vm, getter || noop, noop, computedWatcherOptions);
+      // create internal watcher for the computed property. => 为计算属性创建内部监视程序。且标识为懒的观察者
+      // watchers[key] = new Watcher(vm, getter || noop, noop, computedWatcherOptions);
+      watchers[key] = new Watcher(vm, getter || noop, noop, { lazy: true });
     }
 
     /* => 组件定义的计算属性已经在组件原型上定义。我们只需要定义在实例化时定义的计算属性。 */
@@ -214,12 +225,17 @@ function initComputed(vm: Component, computed: Object) {
   }
 }
 
+/* => 定义 computed */
 export function defineComputed(target: any, key: string, userDef: Object | Function) {
   const shouldCache = !isServerRendering();
+
+  /* => 如果计算属性值是一个函数 */
   if (typeof userDef === 'function') {
+    /* => 非服务端渲染的情况下需要缓存 */
     sharedPropertyDefinition.get = shouldCache ? createComputedGetter(key) : createGetterInvoker(userDef);
     sharedPropertyDefinition.set = noop;
   } else {
+    /* => 否则这是一个对象，拿取 get / set 方法 */
     sharedPropertyDefinition.get = userDef.get
       ? shouldCache && userDef.cache !== false
         ? createComputedGetter(key)
@@ -228,6 +244,7 @@ export function defineComputed(target: any, key: string, userDef: Object | Funct
     sharedPropertyDefinition.set = userDef.set || noop;
   }
 
+  /* => 如果计算属性被重新赋值且又没提供 set 方法 */
   if (process.env.NODE_ENV !== 'production' && sharedPropertyDefinition.set === noop) {
     sharedPropertyDefinition.set = function () {
       /* => 计算属性 key 被赋值，但它没有 setter。 */
@@ -239,48 +256,63 @@ export function defineComputed(target: any, key: string, userDef: Object | Funct
   Object.defineProperty(target, key, sharedPropertyDefinition);
 }
 
+/* => 创建 computed getter */
 function createComputedGetter(key) {
   return function computedGetter() {
+    /* => 拿到观察者 */
     const watcher = this._computedWatchers && this._computedWatchers[key];
     if (watcher) {
       if (watcher.dirty) {
         watcher.evaluate();
       }
+
       if (Dep.target) {
+        /* => 依赖收集 */
         watcher.depend();
       }
+
+      /* => 返回值 watcher.value = watcher.get()*/
       return watcher.value;
     }
   };
 }
 
+/* => 创建 Getter 调用程序 */
 function createGetterInvoker(fn) {
   return function computedGetter() {
     return fn.call(this, this);
   };
 }
 
+/* => 初始化 options methods */
 function initMethods(vm: Component, methods: Object) {
   const props = vm.$options.props;
   for (const key in methods) {
     if (process.env.NODE_ENV !== 'production') {
       if (typeof methods[key] !== 'function') {
+        /* => 方法 key 在组件定义中具有类型 typeof methods[key] 。你是否正确地引用了这个函数? */
+        /* => 方法应该是一个函数 */
         warn(
           `Method "${key}" has type "${typeof methods[key]}" in the component definition. Did you reference the function correctly?`,
           vm,
         );
       }
       if (props && hasOwn(props, key)) {
+        /* => 方法 key 已经被定义为一个 prop 。 */
         warn(`Method "${key}" has already been defined as a prop.`, vm);
       }
       if (key in vm && isReserved(key)) {
+        /* => 方法 key 与现有的 Vue 实例方法冲突。避免定义以 _ 或 $ 开头的组件方法。 */
         warn(`Method "${key}" conflicts with an existing Vue instance method. Avoid defining component methods that start with _ or $.`);
       }
     }
+
+    /* => 如果不是一个函数，则将其挂载为一个空函数，否则绑定一个副本挂载在实例上（将当前 vm 实例作为上下文） */
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm);
   }
 }
 
+/* => 初始化 options watch */
 function initWatch(vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key];
@@ -294,6 +326,7 @@ function initWatch(vm: Component, watch: Object) {
   }
 }
 
+/* => 创建观察者 */
 function createWatcher(vm: Component, expOrFn: string | Function, handler: any, options?: Object) {
   if (isPlainObject(handler)) {
     options = handler;
@@ -305,6 +338,7 @@ function createWatcher(vm: Component, expOrFn: string | Function, handler: any, 
   return vm.$watch(expOrFn, handler, options);
 }
 
+/* => 状态混入 */
 export function stateMixin(Vue: Class<Component>) {
   /* => 在使用 object.defineProperty 时，flow 在直接声明 definition 对象方面有一些问题，因此我们必须在这里按流程构建对象。 */
   // flow somehow has problems with directly declared definition object

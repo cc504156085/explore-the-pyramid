@@ -55,20 +55,9 @@ let platformMustUseProp;
 let platformGetTagNamespace;
 let maybeComponent;
 
-export function createASTElement(
-  tag: string,
-  attrs: Array<ASTAttr>,
-  parent: ASTElement | void,
-): ASTElement {
-  return {
-    type: 1,
-    tag,
-    attrsList: attrs,
-    attrsMap: makeAttrsMap(attrs),
-    rawAttrsMap: {},
-    parent,
-    children: [],
-  };
+/* => 创建 AST 元素 */
+export function createASTElement(tag: string, attrs: Array<ASTAttr>, parent: ASTElement | void): ASTElement {
+  return { type: 1, tag, attrsList: attrs, attrsMap: makeAttrsMap(attrs), rawAttrsMap: {}, parent, children: [] };
 }
 
 /** => 将 HTML 字符串转换为 AST 。
@@ -83,10 +72,12 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
   const isReservedTag = options.isReservedTag || no;
   maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag);
 
+  /* => 摘下模块功能 */
   transforms = pluckModuleFunction(options.modules, 'transformNode');
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode');
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode');
 
+  /* => 分隔符 */
   delimiters = options.delimiters;
 
   const stack = [];
@@ -98,6 +89,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
   let inPre = false;
   let warned = false;
 
+  /* => 警告一次 */
   function warnOnce(msg, range) {
     if (!warned) {
       warned = true;
@@ -105,23 +97,27 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
     }
   }
 
+  /* => 关闭元素 */
   function closeElement(element) {
+    /* => 去除空白 */
     trimEndingWhitespace(element);
+
     if (!inVPre && !element.processed) {
       element = processElement(element, options);
     }
-    // tree management
+
+    // tree management => 树管理
     if (!stack.length && element !== root) {
-      // allow root elements with v-if, v-else-if and v-else
+      // allow root elements with v-if, v-else-if and v-else => 允许根元素使用 v-if 、 v-else-if 和 v-else
       if (root.if && (element.elseif || element.else)) {
         if (process.env.NODE_ENV !== 'production') {
           checkRootConstraints(element);
         }
-        addIfCondition(root, {
-          exp: element.elseif,
-          block: element,
-        });
+
+        /* => 添加 if 条件 */
+        addIfCondition(root, { exp: element.elseif, block: element });
       } else if (process.env.NODE_ENV !== 'production') {
+        /* => 组件模板应该只包含一个根元素。如果您在多个元素上使用 v-if，那么使用 v-else-if 来链接它们。 */
         warnOnce(
           `Component template should contain exactly one root element. ` +
             `If you are using v-if on multiple elements, ` +
@@ -130,14 +126,15 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
         );
       }
     }
+
     if (currentParent && !element.forbidden) {
       if (element.elseif || element.else) {
         processIfConditions(element, currentParent);
       } else {
         if (element.slotScope) {
-          // scoped slot
+          // scoped slot => 作用域插槽
           // keep it in the children list so that v-else(-if) conditions can
-          // find it as the prev node.
+          // find it as the prev node. => 将其保留在子列表中，以便 v-else(-if) 条件可以将其作为 prev 节点查找。
           const name = element.slotTarget || '"default"';
           (currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element;
         }
@@ -146,56 +143,53 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       }
     }
 
-    // final children cleanup
-    // filter out scoped slots
-    element.children = element.children.filter(c => !(c: any).slotScope);
-    // remove trailing whitespace node again
+    // final children cleanup  => 最后清理 children
+    // filter out scoped slots => 过滤出作用域槽
+    element.children = element.children.filter((c) => !(c: any).slotScope);
+
+    // remove trailing whitespace node again => 再次删除尾随空白节点
     trimEndingWhitespace(element);
 
-    // check pre state
+    // check pre state => 检查之前的状态
     if (element.pre) {
       inVPre = false;
     }
+
     if (platformIsPreTag(element.tag)) {
       inPre = false;
     }
-    // apply post-transforms
+
+    // apply post-transforms => 应用转化后
     for (let i = 0; i < postTransforms.length; i++) {
       postTransforms[i](element, options);
     }
   }
 
+  /* => 调整结束的空白 */
   function trimEndingWhitespace(el) {
-    // remove trailing whitespace node
+    // remove trailing whitespace node => 删除尾随空白节点
     if (!inPre) {
       let lastNode;
-      while (
-        (lastNode = el.children[el.children.length - 1]) &&
-        lastNode.type === 3 &&
-        lastNode.text === ' '
-      ) {
+      while ((lastNode = el.children[el.children.length - 1]) && lastNode.type === 3 && lastNode.text === ' ') {
         el.children.pop();
       }
     }
   }
 
+  /* => 检查根约束 */
   function checkRootConstraints(el) {
     if (el.tag === 'slot' || el.tag === 'template') {
-      warnOnce(
-        `Cannot use <${el.tag}> as component root element because it may ` +
-          'contain multiple nodes.',
-        { start: el.start },
-      );
+      /* => 不能使用 el.tag 作为组件根元素，因为它可能包含多个节点。 */
+      warnOnce(`Cannot use <${el.tag}> as component root element because it may contain multiple nodes.`, { start: el.start });
     }
+
     if (el.attrsMap.hasOwnProperty('v-for')) {
-      warnOnce(
-        'Cannot use v-for on stateful component root element because ' +
-          'it renders multiple elements.',
-        el.rawAttrsMap['v-for'],
-      );
+      /* => 不能在有状态组件根元素上使用 v-for，因为它渲染多个元素。 */
+      warnOnce('Cannot use v-for on stateful component root element because it renders multiple elements.', el.rawAttrsMap['v-for']);
     }
   }
 
+  /* => 解析 HTML */
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -230,16 +224,12 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
             return cumulated;
           }, {});
         }
-        attrs.forEach(attr => {
+        attrs.forEach((attr) => {
           if (invalidAttributeRE.test(attr.name)) {
-            warn(
-              `Invalid dynamic argument expression: attribute names cannot contain ` +
-                `spaces, quotes, <, >, / or =.`,
-              {
-                start: attr.start + attr.name.indexOf(`[`),
-                end: attr.start + attr.name.length,
-              },
-            );
+            warn(`Invalid dynamic argument expression: attribute names cannot contain ` + `spaces, quotes, <, >, / or =.`, {
+              start: attr.start + attr.name.indexOf(`[`),
+              end: attr.start + attr.name.length,
+            });
           }
         });
       }
@@ -441,18 +431,14 @@ function processKey(el) {
   if (exp) {
     if (process.env.NODE_ENV !== 'production') {
       if (el.tag === 'template') {
-        warn(
-          `<template> cannot be keyed. Place the key on real elements instead.`,
-          getRawBindingAttr(el, 'key'),
-        );
+        warn(`<template> cannot be keyed. Place the key on real elements instead.`, getRawBindingAttr(el, 'key'));
       }
       if (el.for) {
         const iterator = el.iterator2 || el.iterator1;
         const parent = el.parent;
         if (iterator && iterator === exp && parent && parent.tag === 'transition-group') {
           warn(
-            `Do not use v-for index as key on <transition-group> children, ` +
-              `this is the same as not using keys.`,
+            `Do not use v-for index as key on <transition-group> children, ` + `this is the same as not using keys.`,
             getRawBindingAttr(el, 'key'),
             true /* tip */,
           );
@@ -537,8 +523,7 @@ function processIfConditions(el, parent) {
     });
   } else if (process.env.NODE_ENV !== 'production') {
     warn(
-      `v-${el.elseif ? 'else-if="' + el.elseif + '"' : 'else'} ` +
-        `used on element <${el.tag}> without corresponding v-if.`,
+      `v-${el.elseif ? 'else-if="' + el.elseif + '"' : 'else'} used on element <${el.tag}> without corresponding v-if.`,
       el.rawAttrsMap[el.elseif ? 'v-else-if' : 'v-else'],
     );
   }
@@ -551,10 +536,7 @@ function findPrevElement(children: Array<any>): ASTElement | void {
       return children[i];
     } else {
       if (process.env.NODE_ENV !== 'production' && children[i].text !== ' ') {
-        warn(
-          `text "${children[i].text.trim()}" between v-if and v-else(-if) ` + `will be ignored.`,
-          children[i],
-        );
+        warn(`text "${children[i].text.trim()}" between v-if and v-else(-if) will be ignored.`, children[i]);
       }
       children.pop();
     }
@@ -630,11 +612,7 @@ function processSlotContent(el) {
             warn(`Unexpected mixed usage of different slot syntaxes.`, el);
           }
           if (el.parent && !maybeComponent(el.parent)) {
-            warn(
-              `<template v-slot> can only appear at the root level inside ` +
-                `the receiving component`,
-              el,
-            );
+            warn(`<template v-slot> can only appear at the root level inside ` + `the receiving component`, el);
           }
         }
         const { name, dynamic } = getSlotName(slotBinding);
@@ -655,8 +633,7 @@ function processSlotContent(el) {
           }
           if (el.scopedSlots) {
             warn(
-              `To avoid scope ambiguity, the default slot should also use ` +
-                `<template> syntax when there are other named slots.`,
+              `To avoid scope ambiguity, the default slot should also use ` + `<template> syntax when there are other named slots.`,
               slotBinding,
             );
           }
@@ -783,10 +760,7 @@ function processAttrs(el) {
             }
           }
         }
-        if (
-          (modifiers && modifiers.prop) ||
-          (!el.component && platformMustUseProp(el.tag, el.attrsMap.type, name))
-        ) {
+        if ((modifiers && modifiers.prop) || (!el.component && platformMustUseProp(el.tag, el.attrsMap.type, name))) {
           addProp(el, name, value, list[i], isDynamic);
         } else {
           addAttr(el, name, value, list[i], isDynamic);
@@ -835,11 +809,7 @@ function processAttrs(el) {
       addAttr(el, name, JSON.stringify(value), list[i]);
       // #6887 firefox doesn't update muted state if set via attribute
       // even immediately after element creation
-      if (
-        !el.component &&
-        name === 'muted' &&
-        platformMustUseProp(el.tag, el.attrsMap.type, name)
-      ) {
+      if (!el.component && name === 'muted' && platformMustUseProp(el.tag, el.attrsMap.type, name)) {
         addProp(el, name, 'true', list[i]);
       }
     }
@@ -861,7 +831,7 @@ function parseModifiers(name: string): Object | void {
   const match = name.match(modifierRE);
   if (match) {
     const ret = {};
-    match.forEach(m => {
+    match.forEach((m) => {
       ret[m.slice(1)] = true;
     });
     return ret;
@@ -885,10 +855,7 @@ function isTextTag(el): boolean {
 }
 
 function isForbiddenTag(el): boolean {
-  return (
-    el.tag === 'style' ||
-    (el.tag === 'script' && (!el.attrsMap.type || el.attrsMap.type === 'text/javascript'))
-  );
+  return el.tag === 'style' || (el.tag === 'script' && (!el.attrsMap.type || el.attrsMap.type === 'text/javascript'));
 }
 
 const ieNSBug = /^xmlns:NS\d+/;

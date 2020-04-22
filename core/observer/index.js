@@ -25,7 +25,7 @@ const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
  */
 export let shouldObserve: boolean = true;
 
-/* => 切换观察 */
+/* => 切换观察（是否将数据转换成响应式的） */
 export function toggleObserving(value: boolean) {
   shouldObserve = value;
 }

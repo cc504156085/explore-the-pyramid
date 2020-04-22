@@ -4,17 +4,16 @@ import { tip, toArray, hyphenate, formatComponentName, invokeWithErrorHandling }
 import { updateListeners } from '../vdom/helpers/index';
 
 export function initEvents(vm: Component) {
-  /* => 创建事件池对象，存储事件 */
+  /* => 创建事件池对象，存储通过 v-on 注册的事件 */
   vm._events = Object.create(null);
   vm._hasHookEvent = false;
 
+  /* => 模板编译阶段，将解析到组件时，会将其实例化，且将其注册的事件解析成 object 通过参数传递给子组件，并且保存在 _parentListeners */
   // init parent attached events => 初始化父组件附加的事件（父组件传给子组件的事件）
   const listeners = vm.$options._parentListeners;
 
-  if (listeners) {
-    /* => 更新组件监听器（向子组件注册事件） */
-    updateComponentListeners(vm, listeners);
-  }
+  /* => 更新组件监听器（向子组件注册事件） */
+  if (listeners) updateComponentListeners(vm, listeners);
 }
 
 let target: any;

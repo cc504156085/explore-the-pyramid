@@ -17,7 +17,6 @@ export function createCompilerCreator(baseCompile: Function): Function {
 
       if (options) {
         if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
-          // $flow-disable-line
           const leadingSpaceLength = template.match(/^\s*/)[0].length;
 
           warn = (msg, range, tip) => {
@@ -33,18 +32,18 @@ export function createCompilerCreator(baseCompile: Function): Function {
             (tip ? tips : errors).push(data);
           };
         }
-        // merge custom modules
+ 
+        // merge custom modules => 合并定制模块
         if (options.modules) {
           finalOptions.modules = (baseOptions.modules || []).concat(options.modules);
         }
-        // merge custom directives
+
+        // merge custom directives => 合并定制指令
         if (options.directives) {
-          finalOptions.directives = extend(
-            Object.create(baseOptions.directives || null),
-            options.directives,
-          );
+          finalOptions.directives = extend(Object.create(baseOptions.directives || null), options.directives);
         }
-        // copy other options
+
+        // copy other options => 复制其他选项
         for (const key in options) {
           if (key !== 'modules' && key !== 'directives') {
             finalOptions[key] = options[key];
@@ -63,9 +62,6 @@ export function createCompilerCreator(baseCompile: Function): Function {
       return compiled;
     }
 
-    return {
-      compile,
-      compileToFunctions: createCompileToFunctionFn(compile),
-    };
+    return { compile, compileToFunctions: createCompileToFunctionFn(compile) };
   };
 }

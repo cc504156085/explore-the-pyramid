@@ -34,13 +34,8 @@ export default class Watcher {
   getter: Function;
   value: any;
 
-  constructor(
-    vm: Component, // => 实例
-    expOrFn: string | Function, // => 表达式
-    cb: Function, // => 回调函数
-    options?: ?Object, // => 配置选项
-    isRenderWatcher?: boolean, // => 是否为渲染 Watcher
-  ) {
+  /* => 实例、表达式、回调函数、配置选项、是否为渲染 Watcher */
+  constructor(vm: Component, expOrFn: string | Function, cb: Function, options?: ?Object, isRenderWatcher?: boolean) {
     this.vm = vm;
 
     /* => 如果是渲染 Watcher ，在实例上添加 _watcher 私有属性 */
@@ -55,7 +50,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep; // => 深度监听
       this.user = !!options.user;
-      this.lazy = !!options.lazy;
+      this.lazy = !!options.lazy; // => 计算属性
       this.sync = !!options.sync;
       this.before = options.before;
     } else {
@@ -81,12 +76,10 @@ export default class Watcher {
       if (!this.getter) {
         this.getter = noop;
 
-        /* => 监视路径失败：“${expOrFn}”监视程序只接受简单的点分隔路径。对于完全控制，请改用函数。 */
+        /* => 监视路径失败：expOrFn 监视程序只接受简单的点分隔路径。对于完全控制，请改用函数。 */
         process.env.NODE_ENV !== 'production' &&
           warn(
-            `Failed watching path: "${expOrFn}" ` +
-              'Watcher only accepts simple dot-delimited paths. ' +
-              'For full control, use a function instead.',
+            `Failed watching path: "${expOrFn}" Watcher only accepts simple dot-delimited paths. For full control, use a function instead.`,
             vm,
           );
       }
@@ -105,12 +98,13 @@ export default class Watcher {
       value = this.getter.call(vm, vm);
     } catch (e) {
       if (this.user) {
+        /* => 获取观察者 this.expression */
         handleError(e, vm, `getter for watcher "${this.expression}"`);
       } else {
         throw e;
       }
     } finally {
-      // "touch" every property so they are all tracked as => “触摸”每一个属性，这样它们都被跟踪为
+      // "touch" every property so they are all tracked as => 触摸 每一个属性，这样它们都被跟踪为
       // dependencies for deep watching => 深度监视的依赖项
       if (this.deep) {
         /* => 递归循环该 value 里面的每一项 */
@@ -186,22 +180,21 @@ export default class Watcher {
   run() {
     if (this.active) {
       const value = this.get();
-      if (
-        value !== this.value ||
-        /* => 即使值相同，对象/数组上的深度观察程序和观察程序也应该启动，因为该值可能已发生变化。 */
-        // Deep watchers and watchers on Object/Arrays should fire even
-        // when the value is the same, because the value may
-        // have mutated.
-        isObject(value) ||
-        this.deep
-      ) {
+
+      /* => 即使值相同，对象/数组上的深度观察程序和观察程序也应该启动，因为该值可能已发生变化。 */
+      // Deep watchers and watchers on Object/Arrays should fire even
+      // when the value is the same, because the value may
+      // have mutated.
+      if (value !== this.value || isObject(value) || this.deep) {
         // set new value => 设置新值
         const oldValue = this.value;
+
         this.value = value;
         if (this.user) {
           try {
             this.cb.call(this.vm, value, oldValue);
           } catch (e) {
+            /* => 监视程序 this.expression 的回调 */
             handleError(e, this.vm, `callback for watcher "${this.expression}"`);
           }
         } else {

@@ -49,11 +49,11 @@ export function initMixin(Vue: Class<Component>) {
     initLifecycle(vm); // => 初始化当前实例的属性、方法、父子关系
     initEvents(vm); // => 初始化事件（父组件传给子组件的事件）、同时创建事件池对象，存储事件
     initRender(vm); // => 初始化渲染
-    callHook(vm, 'beforeCreate'); // => 调用第一个生命周期hook
+    callHook(vm, 'beforeCreate'); // => 调用第一个生命周期 hook
     initInjections(vm); // resolve injections before data/props => 在初始化数据之前解析注入
     initState(vm); // => 初始化数据（data，props）
     initProvide(vm); // resolve provide after data/props => 在初始化数据之后解析注入的数据
-    callHook(vm, 'created'); // => 调用第二个生命周期hook，到此，所有的数据、事件、状态相关的东西已经初始化完毕
+    callHook(vm, 'created'); // => 调用第二个生命周期 hook，到此，所有的数据、事件、状态相关的东西已经初始化完毕
 
     /* => 以上代码用于创建组件（初始化一个组件所需要的各个东西） */
     if (vm.$options.el) {

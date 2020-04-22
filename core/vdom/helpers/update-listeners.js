@@ -20,12 +20,7 @@ const normalizeEvent = cached((name: string): {
 
   const capture = name.charAt(0) === '!';
   name = capture ? name.slice(1) : name;
-  return {
-    name,
-    once,
-    capture,
-    passive,
-  };
+  return { name, once, capture, passive };
 });
 
 export function createFnInvoker(fns: Function | Array<Function>, vm: ?Component): Function {
@@ -45,17 +40,11 @@ export function createFnInvoker(fns: Function | Array<Function>, vm: ?Component)
   return invoker;
 }
 
-export function updateListeners(
-  on: Object, // => 父级传入的事件
-  oldOn: Object, // => 上一次的事件
-  add: Function, // => $on 方法
-  remove: Function, // => $off 方法
-  createOnceHandler: Function, // => $once 方法
-  vm: Component, // => 当前实例
-) {
+/* => 父级传入的事件、上一次的事件、$on 方法、$off 方法、$once 方法、当前实例 */
+export function updateListeners(on: Object, oldOn: Object, add: Function, remove: Function, createOnceHandler: Function, vm: Component) {
   let name, def, cur, old, event;
 
-  /* => 遍历当前的事件池 */
+  /* => 遍历新事件池 */
   for (name in on) {
     /* => 拿到当前事件 */
     def = cur = on[name];
@@ -66,7 +55,7 @@ export function updateListeners(
     /* => 事件规格化 */
     event = normalizeEvent(name);
 
-    /* istanbul ignore if => 可忽略 */
+    /* istanbul ignore if */
     if (__WEEX__ && isPlainObject(def)) {
       cur = def.handler;
       event.params = def.params;
@@ -74,13 +63,10 @@ export function updateListeners(
 
     /* => 如果事件是 undefined / null */
     if (isUndef(cur)) {
-      /* => 事件“${event.name}”的处理程序获取无效： */
-      process.env.NODE_ENV !== 'production' &&
-        warn(`Invalid handler for event "${event.name}": got ` + String(cur), vm);
+      /* => 事件 event.name 的处理程序获取无效： */
+      process.env.NODE_ENV !== 'production' && warn(`Invalid handler for event "${event.name}": got ` + String(cur), vm);
     } else if (isUndef(old)) {
-      /* => 如果旧事件不存在 */
-
-      /* => 如果 */
+      /* => 如果旧事件池中不存在，说明是新增 */
       if (isUndef(cur.fns)) {
         cur = on[name] = createFnInvoker(cur, vm);
       }
@@ -103,7 +89,7 @@ export function updateListeners(
 
   /* => 遍历旧事件池 */
   for (name in oldOn) {
-    /* => 如果当前事件不存在 */
+    /* => 如果在新的事件池里不存在，说明要移除事件 */
     if (isUndef(on[name])) {
       /* => 规格化事件 */
       event = normalizeEvent(name);

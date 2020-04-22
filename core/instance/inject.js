@@ -12,9 +12,13 @@ export function initProvide(vm: Component) {
 }
 
 export function initInjections(vm: Component) {
+  /* => 自底向上搜索注入的数据，并返回搜索结果 */
   const result = resolveInject(vm.$options.inject, vm);
+
   if (result) {
+    /* => 通知 defineReactive() 不要将这些数据定义成响应式的 */
     toggleObserving(false);
+
     Object.keys(result).forEach((key) => {
       /* istanbul ignore else */
       if (process.env.NODE_ENV !== 'production') {
@@ -28,9 +32,11 @@ export function initInjections(vm: Component) {
           );
         });
       } else {
+        /* => 在 vm 实例上挂载属性 */
         defineReactive(vm, key, result[key]);
       }
     });
+
     toggleObserving(true);
   }
 }
@@ -39,24 +45,39 @@ export function resolveInject(inject: any, vm: Component): ?Object {
   if (inject) {
     // inject is :any because flow is not smart enough to figure out cached => inject 是 any 类型，因为 flow 不够聪明，无法找出缓存
     const result = Object.create(null);
+
+    /* => 获取所有属性（包括 Symbol） */
     const keys = hasSymbol ? Reflect.ownKeys(inject) : Object.keys(inject);
 
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       // #6574 in case the inject object is observed... => 如果注入对象被观察到 ......
       if (key === '__ob__') continue;
+
+      /* => 得到 provide 源属性（这些数据规格化之后会拥有一个 from 属性，指向源头） */
       const provideKey = inject[key].from;
       let source = vm;
+
+      /* => 在实例上自底向上搜索 */
       while (source) {
+        /* => 如果搜索到了 */
         if (source._provided && hasOwn(source._provided, provideKey)) {
+          /* => 将值存放在结果集且结束循环 */
           result[key] = source._provided[provideKey];
           break;
         }
+
+        /* => 否则继续往上搜索 */
         source = source.$parent;
       }
+
+      /* => 如果设置了默认值 */
       if (!source) {
         if ('default' in inject[key]) {
+          /* => 用该默认值作为结果 */
           const provideDefault = inject[key].default;
+
+          /* => 如果是一个函数，拿取调用的返回结果 */
           result[key] = typeof provideDefault === 'function' ? provideDefault.call(vm) : provideDefault;
         } else if (process.env.NODE_ENV !== 'production') {
           /* => 没有找到 key 注入 */
@@ -64,6 +85,8 @@ export function resolveInject(inject: any, vm: Component): ?Object {
         }
       }
     }
+
+    /* => 返回搜索到的注入 */
     return result;
   }
 }
