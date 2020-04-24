@@ -3,20 +3,13 @@
 /**
  * Cross-platform code generation for component v-model
  */
-export function genComponentModel(
-  el: ASTElement,
-  value: string,
-  modifiers: ?ASTModifiers,
-): ?boolean {
+export function genComponentModel(el: ASTElement, value: string, modifiers: ?ASTModifiers): ?boolean {
   const { number, trim } = modifiers || {};
 
   const baseValueExpression = '$$v';
   let valueExpression = baseValueExpression;
   if (trim) {
-    valueExpression =
-      `(typeof ${baseValueExpression} === 'string'` +
-      `? ${baseValueExpression}.trim()` +
-      `: ${baseValueExpression})`;
+    valueExpression = `(typeof ${baseValueExpression} === 'string'` + `? ${baseValueExpression}.trim()` + `: ${baseValueExpression})`;
   }
   if (number) {
     valueExpression = `_n(${valueExpression})`;

@@ -191,6 +191,7 @@ function initComputed(vm: Component, computed: Object) {
   const isSSR = isServerRendering();
 
   for (const key in computed) {
+    /* => 用户定义的计算属性 */
     const userDef = computed[key];
 
     /* => 若是一个函数，将其当做 getter ，若是对象，需要提供 get 方法 */
@@ -258,20 +259,23 @@ export function defineComputed(target: any, key: string, userDef: Object | Funct
 
 /* => 创建 computed getter */
 function createComputedGetter(key) {
+  /* => 返回一个函数，当用户执行该计算属性时，才真正调用取值 */
   return function computedGetter() {
     /* => 拿到观察者 */
     const watcher = this._computedWatchers && this._computedWatchers[key];
+
     if (watcher) {
+      /* => 默认第一次为 true，执行获取值之后，改成 false */
       if (watcher.dirty) {
         watcher.evaluate();
       }
 
+      /* => 依赖收集 */
       if (Dep.target) {
-        /* => 依赖收集 */
         watcher.depend();
       }
 
-      /* => 返回值 watcher.value = watcher.get()*/
+      /* => 当下一次数据没有变化的时候，直接返回缓存的值 */
       return watcher.value;
     }
   };
@@ -384,6 +388,8 @@ export function stateMixin(Vue: Class<Component>) {
 
     /* => 否则是一个函数 */
     options = options || {};
+
+    /* => 标识为用户定义的 Watcher 。 this.$watch() */
     options.user = true;
 
     /* => 创建一个 Watcher */

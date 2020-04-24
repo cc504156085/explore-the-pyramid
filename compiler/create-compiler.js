@@ -7,9 +7,9 @@ import { createCompileToFunctionFn } from './to-function';
 export function createCompilerCreator(baseCompile: Function): Function {
   return function createCompiler(baseOptions: CompilerOptions) {
     function compile(template: string, options?: CompilerOptions): CompiledResult {
-      const finalOptions = Object.create(baseOptions);
-      const errors = [];
       const tips = [];
+      const errors = [];
+      const finalOptions = Object.create(baseOptions);
 
       let warn = (msg, range, tip) => {
         (tip ? tips : errors).push(msg);
@@ -32,7 +32,7 @@ export function createCompilerCreator(baseCompile: Function): Function {
             (tip ? tips : errors).push(data);
           };
         }
- 
+
         // merge custom modules => 合并定制模块
         if (options.modules) {
           finalOptions.modules = (baseOptions.modules || []).concat(options.modules);
@@ -54,11 +54,14 @@ export function createCompilerCreator(baseCompile: Function): Function {
       finalOptions.warn = warn;
 
       const compiled = baseCompile(template.trim(), finalOptions);
+
       if (process.env.NODE_ENV !== 'production') {
         detectErrors(compiled.ast, warn);
       }
+
       compiled.errors = errors;
       compiled.tips = tips;
+
       return compiled;
     }
 

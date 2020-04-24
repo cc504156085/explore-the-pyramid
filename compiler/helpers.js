@@ -42,19 +42,7 @@ export function addDirective(
   modifiers: ?ASTModifiers,
   range?: Range,
 ) {
-  (el.directives || (el.directives = [])).push(
-    rangeSetItem(
-      {
-        name,
-        rawName,
-        value,
-        arg,
-        isDynamicArg,
-        modifiers,
-      },
-      range,
-    ),
-  );
+  (el.directives || (el.directives = [])).push(rangeSetItem({ name, rawName, value, arg, isDynamicArg, modifiers }, range));
   el.plain = false;
 }
 

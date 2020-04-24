@@ -19,9 +19,7 @@ const prohibitedKeywordRE = new RegExp(
 );
 
 // these unary operators should not be used as property/method names
-const unaryOperatorsRE = new RegExp(
-  '\\b' + 'delete,typeof,void'.split(',').join('\\s*\\([^\\)]*\\)|\\b') + '\\s*\\([^\\)]*\\)',
-);
+const unaryOperatorsRE = new RegExp('\\b' + 'delete,typeof,void'.split(',').join('\\s*\\([^\\)]*\\)|\\b') + '\\s*\\([^\\)]*\\)');
 
 // strip strings in expressions
 const stripStringRE = /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*\$\{|\}(?:[^`\\]|\\.)*`|`(?:[^`\\]|\\.)*`/g;
@@ -66,11 +64,7 @@ function checkEvent(exp: string, text: string, warn: Function, range?: Range) {
   const stripped = exp.replace(stripStringRE, '');
   const keywordMatch: any = stripped.match(unaryOperatorsRE);
   if (keywordMatch && stripped.charAt(keywordMatch.index - 1) !== '$') {
-    warn(
-      `avoid using JavaScript unary operator as property name: ` +
-        `"${keywordMatch[0]}" in expression ${text.trim()}`,
-      range,
-    );
+    warn(`avoid using JavaScript unary operator as property name: ` + `"${keywordMatch[0]}" in expression ${text.trim()}`, range);
   }
   checkExpression(exp, text, warn, range);
 }
@@ -82,13 +76,7 @@ function checkFor(node: ASTElement, text: string, warn: Function, range?: Range)
   checkIdentifier(node.iterator2, 'v-for iterator', text, warn, range);
 }
 
-function checkIdentifier(
-  ident: ?string,
-  type: string,
-  text: string,
-  warn: Function,
-  range?: Range,
-) {
+function checkIdentifier(ident: ?string, type: string, text: string, warn: Function, range?: Range) {
   if (typeof ident === 'string') {
     try {
       new Function(`var ${ident}=_`);
@@ -104,36 +92,17 @@ function checkExpression(exp: string, text: string, warn: Function, range?: Rang
   } catch (e) {
     const keywordMatch = exp.replace(stripStringRE, '').match(prohibitedKeywordRE);
     if (keywordMatch) {
-      warn(
-        `avoid using JavaScript keyword as property name: ` +
-          `"${keywordMatch[0]}"\n  Raw expression: ${text.trim()}`,
-        range,
-      );
+      warn(`avoid using JavaScript keyword as property name: ` + `"${keywordMatch[0]}"\n  Raw expression: ${text.trim()}`, range);
     } else {
-      warn(
-        `invalid expression: ${e.message} in\n\n` +
-          `    ${exp}\n\n` +
-          `  Raw expression: ${text.trim()}\n`,
-        range,
-      );
+      warn(`invalid expression: ${e.message} in\n\n` + `    ${exp}\n\n` + `  Raw expression: ${text.trim()}\n`, range);
     }
   }
 }
 
-function checkFunctionParameterExpression(
-  exp: string,
-  text: string,
-  warn: Function,
-  range?: Range,
-) {
+function checkFunctionParameterExpression(exp: string, text: string, warn: Function, range?: Range) {
   try {
     new Function(exp, '');
   } catch (e) {
-    warn(
-      `invalid function parameter expression: ${e.message} in\n\n` +
-        `    ${exp}\n\n` +
-        `  Raw expression: ${text.trim()}\n`,
-      range,
-    );
+    warn(`invalid function parameter expression: ${e.message} in\n\n` + `    ${exp}\n\n` + `  Raw expression: ${text.trim()}\n`, range);
   }
 }

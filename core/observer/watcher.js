@@ -69,10 +69,12 @@ export default class Watcher {
     // parse expression for getter => getter 的解析表达式
     /* => 判断渲染 Watcher 传入的 updateComponent 是否是一个函数 */
     if (typeof expOrFn === 'function') {
-      /* 将 updateComponent 回调函数赋值给 getter 属性 => 用于 this.get() 处获取数据 */
+      /* => 将 updateComponent 回调函数赋值给 getter 属性 => 用于 this.get() 处获取数据 */
       this.getter = expOrFn;
     } else {
+      /* => 如果不是函数，则包装成函数形式 */
       this.getter = parsePath(expOrFn);
+
       if (!this.getter) {
         this.getter = noop;
 
@@ -84,6 +86,8 @@ export default class Watcher {
           );
       }
     }
+
+    /* => 对于计算属性，默认先不执行 */
     this.value = this.lazy ? undefined : this.get();
   }
 
@@ -91,10 +95,13 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get() {
+    /* => 将当前 Watcher 挂载到全局（计算属性由此可以进行依赖收集） Dep.target = this */
     pushTarget(this);
+
     let value;
     const vm = this.vm;
     try {
+      /* => 取值 */
       value = this.getter.call(vm, vm);
     } catch (e) {
       if (this.user) {
@@ -107,12 +114,14 @@ export default class Watcher {
       // "touch" every property so they are all tracked as => 触摸 每一个属性，这样它们都被跟踪为
       // dependencies for deep watching => 深度监视的依赖项
       if (this.deep) {
-        /* => 递归循环该 value 里面的每一项 */
+        /* => 递归循环该 value 里面的每一项，{ msg: { err: "s" } }，默认只观测 msg ，加上 deep 选项可观测到 err */
         traverse(value);
       }
       popTarget();
       this.cleanupDeps();
     }
+
+    /* => 返回取值结果 */
     return value;
   }
 
@@ -162,7 +171,7 @@ export default class Watcher {
    * Will be called when a dependency changes.
    */
   update() {
-    /* istanbul ignore else */
+    /* => 对于计算属性，不会立即更新，而是标识为 true 当用户取值时，再执行取值操作。且优先于 DOM 渲染，由此渲染时才可以拿到最新的计算属性值 */
     if (this.lazy) {
       this.dirty = true;
     } else if (this.sync) {

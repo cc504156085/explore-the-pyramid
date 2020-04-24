@@ -35,10 +35,7 @@ export class CodegenState {
   }
 }
 
-export type CodegenResult = {
-  render: string,
-  staticRenderFns: Array<string>,
-};
+export type CodegenResult = { render: string, staticRenderFns: Array<string> };
 
 export function generate(ast: ASTElement | void, options: CompilerOptions): CodegenResult {
   const state = new CodegenState(options);
@@ -67,12 +64,13 @@ export function genElement(el: ASTElement, state: CodegenState): string {
   } else if (el.tag === 'slot') {
     return genSlot(el, state);
   } else {
-    // component or element
+    // component or element => 组件或元素
     let code;
     if (el.component) {
       code = genComponent(el.component, el, state);
     } else {
       let data;
+
       if (!el.plain || (el.pre && state.maybeComponent(el))) {
         data = genData(el, state);
       }
@@ -84,24 +82,28 @@ export function genElement(el: ASTElement, state: CodegenState): string {
         children ? `,${children}` : '' // children
       })`;
     }
-    // module transforms
+
+    // module transforms => 模块转换
     for (let i = 0; i < state.transforms.length; i++) {
       code = state.transforms[i](el, code);
     }
+
     return code;
   }
 }
 
-// hoist static sub-trees out
+// hoist static sub-trees out => 提升静态子树
 function genStatic(el: ASTElement, state: CodegenState): string {
   el.staticProcessed = true;
+  /** => 一些元素(模板)需要在 v-pre 节点中以不同的方式运行。
+   *  所有 pre 节点都是静态根，因此我们可以使用这个位置来包装状态更改，并在退出 pre 节点时重置它。
+   */
   // Some elements (templates) need to behave differently inside of a v-pre
   // node.  All pre nodes are static roots, so we can use this as a location to
   // wrap a state change and reset it upon exiting the pre node.
   const originalPreState = state.pre;
-  if (el.pre) {
-    state.pre = el.pre;
-  }
+  if (el.pre) state.pre = el.pre;
+
   state.staticRenderFns.push(`with(this){return ${genElement(el, state)}}`);
   state.pre = originalPreState;
   return `_m(${state.staticRenderFns.length - 1}${el.staticInFor ? ',true' : ''})`;
@@ -123,11 +125,7 @@ function genOnce(el: ASTElement, state: CodegenState): string {
       parent = parent.parent;
     }
     if (!key) {
-      process.env.NODE_ENV !== 'production' &&
-        state.warn(
-          `v-once can only be used inside v-for that is keyed. `,
-          el.rawAttrsMap['v-once'],
-        );
+      process.env.NODE_ENV !== 'production' && state.warn(`v-once can only be used inside v-for that is keyed. `, el.rawAttrsMap['v-once']);
       return genElement(el, state);
     }
     return `_o(${genElement(el, state)},${state.onceId++},${key})`;
@@ -137,56 +135,37 @@ function genOnce(el: ASTElement, state: CodegenState): string {
 }
 
 export function genIf(el: any, state: CodegenState, altGen?: Function, altEmpty?: string): string {
-  el.ifProcessed = true; // avoid recursion
+  // avoid recursion => 避免递归
+  el.ifProcessed = true;
+
   return genIfConditions(el.ifConditions.slice(), state, altGen, altEmpty);
 }
 
-function genIfConditions(
-  conditions: ASTIfConditions,
-  state: CodegenState,
-  altGen?: Function,
-  altEmpty?: string,
-): string {
+function genIfConditions(conditions: ASTIfConditions, state: CodegenState, altGen?: Function, altEmpty?: string): string {
   if (!conditions.length) {
     return altEmpty || '_e()';
   }
 
   const condition = conditions.shift();
   if (condition.exp) {
-    return `(${condition.exp})?${genTernaryExp(condition.block)}:${genIfConditions(
-      conditions,
-      state,
-      altGen,
-      altEmpty,
-    )}`;
+    return `(${condition.exp})?${genTernaryExp(condition.block)}:${genIfConditions(conditions, state, altGen, altEmpty)}`;
   } else {
     return `${genTernaryExp(condition.block)}`;
   }
 
-  // v-if with v-once should generate code like (a)?_m(0):_m(1)
+  // v-if with v-once should generate code like (a)?_m(0):_m(1) => 使用 v-if / v-once 应该生成像 (a) ? _m(0) : _m(1) 这样的代码
   function genTernaryExp(el) {
     return altGen ? altGen(el, state) : el.once ? genOnce(el, state) : genElement(el, state);
   }
 }
 
-export function genFor(
-  el: any,
-  state: CodegenState,
-  altGen?: Function,
-  altHelper?: string,
-): string {
+export function genFor(el: any, state: CodegenState, altGen?: Function, altHelper?: string): string {
   const exp = el.for;
   const alias = el.alias;
   const iterator1 = el.iterator1 ? `,${el.iterator1}` : '';
   const iterator2 = el.iterator2 ? `,${el.iterator2}` : '';
 
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    state.maybeComponent(el) &&
-    el.tag !== 'slot' &&
-    el.tag !== 'template' &&
-    !el.key
-  ) {
+  if (process.env.NODE_ENV !== 'production' && state.maybeComponent(el) && el.tag !== 'slot' && el.tag !== 'template' && !el.key) {
     state.warn(
       `<${el.tag} v-for="${alias} in ${exp}">: component lists rendered with ` +
         `v-for should have explicit keys. ` +
@@ -198,10 +177,7 @@ export function genFor(
 
   el.forProcessed = true; // avoid recursion
   return (
-    `${altHelper || '_l'}((${exp}),` +
-    `function(${alias}${iterator1}${iterator2}){` +
-    `return ${(altGen || genElement)(el, state)}` +
-    '})'
+    `${altHelper || '_l'}((${exp}),` + `function(${alias}${iterator1}${iterator2}){` + `return ${(altGen || genElement)(el, state)}` + '})'
   );
 }
 
@@ -327,26 +303,20 @@ function genInlineTemplate(el: ASTElement, state: CodegenState): ?string {
   }
   if (ast && ast.type === 1) {
     const inlineRenderFns = generate(ast, state.options);
-    return `inlineTemplate:{render:function(){${
-      inlineRenderFns.render
-    }},staticRenderFns:[${inlineRenderFns.staticRenderFns
-      .map(code => `function(){${code}}`)
+    return `inlineTemplate:{render:function(){${inlineRenderFns.render}},staticRenderFns:[${inlineRenderFns.staticRenderFns
+      .map((code) => `function(){${code}}`)
       .join(',')}]}`;
   }
 }
 
-function genScopedSlots(
-  el: ASTElement,
-  slots: { [key: string]: ASTElement },
-  state: CodegenState,
-): string {
+function genScopedSlots(el: ASTElement, slots: { [key: string]: ASTElement }, state: CodegenState): string {
   // by default scoped slots are considered "stable", this allows child
   // components with only scoped slots to skip forced updates from parent.
   // but in some cases we have to bail-out of this optimization
   // for example if the slot contains dynamic names, has v-if or v-for on them...
   let needsForceUpdate =
     el.for ||
-    Object.keys(slots).some(key => {
+    Object.keys(slots).some((key) => {
       const slot = slots[key];
       return (
         slot.slotTargetDynamic || slot.if || slot.for || containsSlotChild(slot) // is passing down slot from parent which may be dynamic
@@ -379,7 +349,7 @@ function genScopedSlots(
   }
 
   const generatedSlots = Object.keys(slots)
-    .map(key => genScopedSlot(slots[key], state))
+    .map((key) => genScopedSlot(slots[key], state))
     .join(',');
 
   return `scopedSlots:_u([${generatedSlots}]${needsForceUpdate ? `,null,true` : ``}${
@@ -439,44 +409,35 @@ export function genChildren(
   const children = el.children;
   if (children.length) {
     const el: any = children[0];
-    // optimize single v-for
+
+    // optimize single v-for => 优化单个 v-for
     if (children.length === 1 && el.for && el.tag !== 'template' && el.tag !== 'slot') {
       const normalizationType = checkSkip ? (state.maybeComponent(el) ? `,1` : `,0`) : ``;
       return `${(altGenElement || genElement)(el, state)}${normalizationType}`;
     }
+
     const normalizationType = checkSkip ? getNormalizationType(children, state.maybeComponent) : 0;
     const gen = altGenNode || genNode;
-    return `[${children.map(c => gen(c, state)).join(',')}]${
-      normalizationType ? `,${normalizationType}` : ''
-    }`;
+    return `[${children.map((c) => gen(c, state)).join(',')}]${normalizationType ? `,${normalizationType}` : ''}`;
   }
 }
 
-// determine the normalization needed for the children array.
-// 0: no normalization needed
-// 1: simple normalization needed (possible 1-level deep nested array)
-// 2: full normalization needed
-function getNormalizationType(
-  children: Array<ASTNode>,
-  maybeComponent: (el: ASTElement) => boolean,
-): number {
+// determine the normalization needed for the children array.          => 确定子数组所需的标准化
+// 0: no normalization needed                                          => 0：不需要归一化
+// 1: simple normalization needed (possible 1-level deep nested array) => 1：需要简单的标准化(可能是 1 级深度嵌套数组)
+// 2: full normalization needed                                        => 2：完整的规范化需要
+function getNormalizationType(children: Array<ASTNode>, maybeComponent: (el: ASTElement) => boolean): number {
   let res = 0;
   for (let i = 0; i < children.length; i++) {
     const el: ASTNode = children[i];
     if (el.type !== 1) {
       continue;
     }
-    if (
-      needsNormalization(el) ||
-      (el.ifConditions && el.ifConditions.some(c => needsNormalization(c.block)))
-    ) {
+    if (needsNormalization(el) || (el.ifConditions && el.ifConditions.some((c) => needsNormalization(c.block)))) {
       res = 2;
       break;
     }
-    if (
-      maybeComponent(el) ||
-      (el.ifConditions && el.ifConditions.some(c => maybeComponent(c.block)))
-    ) {
+    if (maybeComponent(el) || (el.ifConditions && el.ifConditions.some((c) => maybeComponent(c.block)))) {
       res = 1;
     }
   }
@@ -516,7 +477,7 @@ function genSlot(el: ASTElement, state: CodegenState): string {
   const attrs =
     el.attrs || el.dynamicAttrs
       ? genProps(
-          (el.attrs || []).concat(el.dynamicAttrs || []).map(attr => ({
+          (el.attrs || []).concat(el.dynamicAttrs || []).map((attr) => ({
             // slot props are camelized
             name: camelize(attr.name),
             value: attr.value,
@@ -537,6 +498,7 @@ function genSlot(el: ASTElement, state: CodegenState): string {
   return res + ')';
 }
 
+/* => componentName 是 el.component ，将它作为参数以避免 flow 的悲观细化 */
 // componentName is el.component, take it as argument to shun flow's pessimistic refinement
 function genComponent(componentName: string, el: ASTElement, state: CodegenState): string {
   const children = el.inlineTemplate ? null : genChildren(el, state, true);
@@ -565,9 +527,8 @@ function genProps(props: Array<ASTAttr>): string {
 
 /* istanbul ignore next */
 function generateValue(value) {
-  if (typeof value === 'string') {
-    return transformSpecialNewlines(value);
-  }
+  if (typeof value === 'string') return transformSpecialNewlines(value);
+
   return JSON.stringify(value);
 }
 

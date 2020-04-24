@@ -378,6 +378,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
     },
   });
 
+  /* => AST 语法树 */
   return root;
 }
 
@@ -469,12 +470,7 @@ export function processFor(el: ASTElement) {
   }
 }
 
-type ForParseResult = {
-  for: string,
-  alias: string,
-  iterator1?: string,
-  iterator2?: string,
-};
+type ForParseResult = { for: string, alias: string, iterator1?: string, iterator2?: string };
 
 export function parseFor(exp: string): ?ForParseResult {
   const inMatch = exp.match(forAliasRE);
@@ -557,7 +553,7 @@ function processOnce(el) {
   }
 }
 
-// handle content being passed to a component as slot,
+// handle content being passed to a component as slot, => 处理作为插槽传递给组件的内容
 // e.g. <template slot="xxx">, <div slot-scope="xxx">
 function processSlotContent(el) {
   let slotScope;

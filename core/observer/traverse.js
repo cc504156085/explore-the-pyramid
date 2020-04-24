@@ -7,9 +7,9 @@ import VNode from '../vdom/vnode';
 const seenObjects = new Set();
 
 /**
- * Recursively traverse an object to evoke all converted => 递归遍历对象以调用所有转换的getter
+ * Recursively traverse an object to evoke all converted => 递归遍历对象以调用所有转换的 getter
  * getters, so that every nested property inside the object
- * is collected as a "deep" dependency. => 以便对象中的每个嵌套属性都作为“深层”依赖项收集。
+ * is collected as a "deep" dependency. => 以便对象中的每个嵌套属性都作为深层依赖项收集。
  */
 export function traverse(val: any) {
   _traverse(val, seenObjects);
@@ -21,16 +21,12 @@ function _traverse(val: any, seen: SimpleSet) {
   const isA = Array.isArray(val);
 
   /* => 如果 val 既不是数组也不是对象，或者已经被冻结 */
-  if ((!isA && !isObject(val)) || Object.isFrozen(val) || val instanceof VNode) {
-    return;
-  }
+  if ((!isA && !isObject(val)) || Object.isFrozen(val) || val instanceof VNode) return;
 
   /* => 保证不会重复收集依赖 */
   if (val.__ob__) {
     const depId = val.__ob__.dep.id;
-    if (seen.has(depId)) {
-      return;
-    }
+    if (seen.has(depId)) return;
     seen.add(depId);
   }
 
