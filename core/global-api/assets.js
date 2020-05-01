@@ -15,9 +15,7 @@ export function initAssetRegisters(Vue: GlobalAPI) {
         return this.options[type + 's'][id];
       } else {
         /* istanbul ignore if => 测试的时候忽略这个 if 语句 */
-        if (process.env.NODE_ENV !== 'production' && type === 'component') {
-          validateComponentName(id);
-        }
+        if (process.env.NODE_ENV !== 'production' && type === 'component') validateComponentName(id);
 
         // => 如果是组件，且第二个参数是一个标准对象
         if (type === 'component' && isPlainObject(definition)) {

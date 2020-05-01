@@ -25,15 +25,11 @@ export function initExtend(Vue: GlobalAPI) {
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {});
 
     // => 如果有缓存，直接返回即可。（防止重复构造，浪费性能）
-    if (cachedCtors[SuperId]) {
-      return cachedCtors[SuperId];
-    }
+    if (cachedCtors[SuperId]) return cachedCtors[SuperId];
 
     // => 校验当前实例或者父级实例的组件名
     const name = extendOptions.name || Super.options.name;
-    if (process.env.NODE_ENV !== 'production' && name) {
-      validateComponentName(name);
-    }
+    if (process.env.NODE_ENV !== 'production' && name) validateComponentName(name);
 
     // => 初始化子类（new Sub 时相当于 new Vue）
     const Sub = function VueComponent(options) {
@@ -60,13 +56,9 @@ export function initExtend(Vue: GlobalAPI) {
     // For props and computed properties, we define the proxy getters on
     // the Vue instances at extension time, on the extended prototype. This
     // avoids Object.defineProperty calls for each instance created.
-    if (Sub.options.props) {
-      initProps(Sub);
-    }
+    if (Sub.options.props) initProps(Sub);
 
-    if (Sub.options.computed) {
-      initComputed(Sub);
-    }
+    if (Sub.options.computed) initComputed(Sub);
 
     /* => 将父类中存在的属性复制到子类中（extend、mixin、use、component、directive、filter） */
     // allow further extension/mixin/plugin usage => 允许进一步的扩展/混合/插件使用
@@ -76,14 +68,10 @@ export function initExtend(Vue: GlobalAPI) {
 
     // create asset registers, so extended classes => 创建资产寄存器，这样扩展类也可以拥有它们的私有资产。
     // can have their private assets too.
-    ASSET_TYPES.forEach(function (type) {
-      Sub[type] = Super[type];
-    });
+    ASSET_TYPES.forEach((type) => (Sub[type] = Super[type]));
 
     // enable recursive self-lookup => 启用递归自查找
-    if (name) {
-      Sub.options.components[name] = Sub;
-    }
+    if (name) Sub.options.components[name] = Sub;
 
     // keep a reference to the super options at extension time.     => 在扩展时保留对 super 选项的引用。
     // later at instantiation we can check if Super's options have  => 稍后在实例化时，我们可以检查 Super 的选项是否已经更新。

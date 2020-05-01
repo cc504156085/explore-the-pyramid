@@ -12,10 +12,9 @@ export default {
   },
 };
 
+/* => 更新指令 */
 function updateDirectives(oldVnode: VNodeWithData, vnode: VNodeWithData) {
-  if (oldVnode.data.directives || vnode.data.directives) {
-    _update(oldVnode, vnode);
-  }
+  if (oldVnode.data.directives || vnode.data.directives) _update(oldVnode, vnode);
 }
 
 function _update(oldVnode, vnode) {
@@ -32,19 +31,15 @@ function _update(oldVnode, vnode) {
     oldDir = oldDirs[key];
     dir = newDirs[key];
     if (!oldDir) {
-      // new directive, bind
+      // => 新的 directive，bind
       callHook(dir, 'bind', vnode, oldVnode);
-      if (dir.def && dir.def.inserted) {
-        dirsWithInsert.push(dir);
-      }
+      if (dir.def && dir.def.inserted) dirsWithInsert.push(dir);
     } else {
-      // existing directive, update
+      // => 现有的 directive, update
       dir.oldValue = oldDir.value;
       dir.oldArg = oldDir.arg;
       callHook(dir, 'update', vnode, oldVnode);
-      if (dir.def && dir.def.componentUpdated) {
-        dirsWithPostpatch.push(dir);
-      }
+      if (dir.def && dir.def.componentUpdated) dirsWithPostpatch.push(dir);
     }
   }
 
@@ -71,43 +66,36 @@ function _update(oldVnode, vnode) {
 
   if (!isCreate) {
     for (key in oldDirs) {
-      if (!newDirs[key]) {
-        // no longer present, unbind
-        callHook(oldDirs[key], 'unbind', oldVnode, oldVnode, isDestroy);
-      }
+      // => 不再存在，解除绑定
+      if (!newDirs[key]) callHook(oldDirs[key], 'unbind', oldVnode, oldVnode, isDestroy);
     }
   }
 }
 
 const emptyModifiers = Object.create(null);
 
-function normalizeDirectives(
-  dirs: ?Array<VNodeDirective>,
-  vm: Component,
-): { [key: string]: VNodeDirective } {
+/* => 规范化指令 */
+function normalizeDirectives(dirs: ?Array<VNodeDirective>, vm: Component): { [key: string]: VNodeDirective } {
   const res = Object.create(null);
-  if (!dirs) {
-    // $flow-disable-line
-    return res;
-  }
+  if (!dirs) return res;
+
   let i, dir;
   for (i = 0; i < dirs.length; i++) {
     dir = dirs[i];
-    if (!dir.modifiers) {
-      // $flow-disable-line
-      dir.modifiers = emptyModifiers;
-    }
+    if (!dir.modifiers) dir.modifiers = emptyModifiers;
+
     res[getRawDirName(dir)] = dir;
     dir.def = resolveAsset(vm.$options, 'directives', dir.name, true);
   }
-  // $flow-disable-line
   return res;
 }
 
+/* => 获取原生指令名称 */
 function getRawDirName(dir: VNodeDirective): string {
   return dir.rawName || `${dir.name}.${Object.keys(dir.modifiers || {}).join('.')}`;
 }
 
+/* => 调用钩子 */
 function callHook(dir, hook, vnode, oldVnode, isDestroy) {
   const fn = dir.def && dir.def[hook];
   if (fn) {

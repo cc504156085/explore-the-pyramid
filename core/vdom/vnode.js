@@ -7,27 +7,27 @@ export default class VNode {
   text: string | void;
   elm: Node | void;
   ns: string | void;
-  context: Component | void; // rendered in this component's scope => 在此组件范围内渲染
+  context: Component | void; // => 在此组件范围内渲染
   key: string | number | void;
   componentOptions: VNodeComponentOptions | void;
-  componentInstance: Component | void; // component instance => 组件实例
-  parent: VNode | void; // component placeholder node => 组件占位符节点
+  componentInstance: Component | void; // => 组件实例
+  parent: VNode | void; // => 组件占位符节点
 
-  // strictly internal => 严格内部
-  raw: boolean; // contains raw HTML? (server only) => 包含原始HTML？（仅服务器）
-  isStatic: boolean; // hoisted static node => 吊装静态节点
-  isRootInsert: boolean; // necessary for enter transition check => 进入过渡检查所必需的
-  isComment: boolean; // empty comment placeholder? => 空注释占位符？
-  isCloned: boolean; // is a cloned node? => 是克隆节点吗？
-  isOnce: boolean; // is a v-once node? => 是v-once节点吗？
-  asyncFactory: Function | void; // async component factory function => 异步组件工厂函数
+  // => 严格内部
+  raw: boolean; // => 包含原始 HTML ？（仅服务器）
+  isStatic: boolean; // => 吊装静态节点
+  isRootInsert: boolean; // => 进入过渡检查所必需的
+  isComment: boolean; // => 空注释占位符？
+  isCloned: boolean; // => 是克隆节点吗？
+  isOnce: boolean; // => 是 v-once 节点吗？
+  asyncFactory: Function | void; // => 异步组件工厂函数
   asyncMeta: Object | void;
   isAsyncPlaceholder: boolean;
   ssrContext: Object | void;
-  fnContext: Component | void; // real context vm for functional nodes => 功能节点的真实上下文vm
-  fnOptions: ?ComponentOptions; // for SSR caching => 用于SSR缓存
-  devtoolsMeta: ?Object; // used to store functional render context for devtools => 用于存储devtools的函数render上下文
-  fnScopeId: ?string; // functional scope id support => 功能范围id支持
+  fnContext: Component | void; // => 功能节点的真实上下文 vm
+  fnOptions: ?ComponentOptions; // => 用于 SSR 缓存
+  devtoolsMeta: ?Object; // => 用于存储 devtools 的函数 render 上下文
+  fnScopeId: ?string; // => 功能范围 id 支持
 
   constructor(
     tag?: string,
@@ -64,8 +64,7 @@ export default class VNode {
     this.isAsyncPlaceholder = false;
   }
 
-  // DEPRECATED: alias for componentInstance for backwards compat. => 已弃用：用于向后兼容的组件安装的别名。
-  /* istanbul ignore next => 可忽略 */
+  // => 已弃用：用于向后兼容的组件安装的别名。
   get child(): Component | void {
     return this.componentInstance;
   }
@@ -85,18 +84,13 @@ export function createTextVNode(val: string | number) {
 }
 
 /* => 优化的浅克隆。用于静态节点和插槽节点，因为它们可以在多个渲染中重用，克隆它们可以避免 DOM 操作依赖于 elm 引用时的错误。 */
-// optimized shallow clone
-// used for static nodes and slot nodes because they may be reused across
-// multiple renders, cloning them avoids errors when DOM manipulations rely
-// on their elm reference.
 export function cloneVNode(vnode: VNode): VNode {
-  /* => 将当前节点上的属性复制，创建新节点 */
+  // => 将当前节点上的属性复制，创建新节点
   const cloned = new VNode(
     vnode.tag,
     vnode.data,
 
-    // #7975 => 克隆子数组以避免在克隆子数组时对原始数组进行变异。
-    // clone children array to avoid mutating original in case of cloning a child.
+    // => 克隆子数组以避免在克隆子数组时对原始数组进行变异。
     vnode.children && vnode.children.slice(),
     vnode.text,
     vnode.elm,
@@ -114,7 +108,7 @@ export function cloneVNode(vnode: VNode): VNode {
   cloned.fnScopeId = vnode.fnScopeId;
   cloned.asyncMeta = vnode.asyncMeta;
 
-  /* => 标识为克隆节点 */
+  // => 标识为克隆节点
   cloned.isCloned = true;
   return cloned;
 }

@@ -15,7 +15,7 @@ const normalizeEvent = cached((name: string): {
   const passive = name.charAt(0) === '&';
   name = passive ? name.slice(1) : name;
 
-  const once = name.charAt(0) === '~'; // Prefixed last, checked first => 前缀最后，先检查
+  const once = name.charAt(0) === '~'; // => 前缀最后，先检查
   name = once ? name.slice(1) : name;
 
   const capture = name.charAt(0) === '!';
@@ -23,6 +23,7 @@ const normalizeEvent = cached((name: string): {
   return { name, once, capture, passive };
 });
 
+/* => 创建 Fn 调用程序 */
 export function createFnInvoker(fns: Function | Array<Function>, vm: ?Component): Function {
   function invoker() {
     const fns = invoker.fns;
@@ -32,7 +33,7 @@ export function createFnInvoker(fns: Function | Array<Function>, vm: ?Component)
         invokeWithErrorHandling(cloned[i], null, arguments, vm, `v-on handler`);
       }
     } else {
-      // return handler return value for single handlers
+      // => 返回处理程序的返回值
       return invokeWithErrorHandling(fns, null, arguments, vm, `v-on handler`);
     }
   }
@@ -55,7 +56,6 @@ export function updateListeners(on: Object, oldOn: Object, add: Function, remove
     /* => 事件规格化 */
     event = normalizeEvent(name);
 
-    /* istanbul ignore if */
     if (__WEEX__ && isPlainObject(def)) {
       cur = def.handler;
       event.params = def.params;
@@ -67,14 +67,10 @@ export function updateListeners(on: Object, oldOn: Object, add: Function, remove
       process.env.NODE_ENV !== 'production' && warn(`Invalid handler for event "${event.name}": got ` + String(cur), vm);
     } else if (isUndef(old)) {
       /* => 如果旧事件池中不存在，说明是新增 */
-      if (isUndef(cur.fns)) {
-        cur = on[name] = createFnInvoker(cur, vm);
-      }
+      if (isUndef(cur.fns)) cur = on[name] = createFnInvoker(cur, vm);
 
       /* => 判断是否是一次性触发事件 */
-      if (isTrue(event.once)) {
-        cur = on[name] = createOnceHandler(event.name, cur, event.capture);
-      }
+      if (isTrue(event.once)) cur = on[name] = createOnceHandler(event.name, cur, event.capture);
 
       /* => 注册事件 */
       add(event.name, cur, event.capture, event.passive, event.params);

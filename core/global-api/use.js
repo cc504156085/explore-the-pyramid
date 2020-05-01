@@ -9,9 +9,7 @@ export function initUse(Vue: GlobalAPI) {
     const installedPlugins = this._installedPlugins || (this._installedPlugins = []);
 
     // => 如果安装的插件集合里已经有了该插件，即该插件已经安装，则直接返回（防止重复安装）
-    if (installedPlugins.indexOf(plugin) > -1) {
-      return this;
-    }
+    if (installedPlugins.indexOf(plugin) > -1) return this;
 
     // additional parameters => 额外的参数，将类数组转换为真实数组（第一个之后的参数）
     const args = toArray(arguments, 1);

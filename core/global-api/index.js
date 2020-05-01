@@ -20,10 +20,8 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   configDef.get = () => config;
 
   if (process.env.NODE_ENV !== 'production') {
-    configDef.set = () => {
-      /* => 不要替换 Vue.config 对象，而是设置单个字段。 */
-      warn('Do not replace the Vue.config object, set individual fields instead.');
-    };
+    /* => 不要替换 Vue.config 对象，而是设置单个字段。 */
+    configDef.set = () => warn('Do not replace the Vue.config object, set individual fields instead.');
   }
 
   // => 在构造函数上定义配置对象，且当用户尝试赋予新值时抛出警告
@@ -47,9 +45,7 @@ export function initGlobalAPI(Vue: GlobalAPI) {
 
   // => 初始化指令、过滤器、组件对象
   Vue.options = Object.create(null);
-  ASSET_TYPES.forEach((type) => {
-    Vue.options[type + 's'] = Object.create(null);
-  });
+  ASSET_TYPES.forEach((type) => (Vue.options[type + 's'] = Object.create(null)));
 
   /* => 这是用于标识“基本”构造函数，以在 Weex 的多实例方案中扩展所有纯对象组件。 */
   // this is used to identify the "base" constructor to extend all plain-object

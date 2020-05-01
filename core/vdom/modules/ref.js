@@ -17,6 +17,7 @@ export default {
   },
 };
 
+/* => 注册 ref */
 export function registerRef(vnode: VNodeWithData, isRemoval: ?boolean) {
   const key = vnode.data.ref;
   if (!isDef(key)) return;
@@ -35,7 +36,6 @@ export function registerRef(vnode: VNodeWithData, isRemoval: ?boolean) {
       if (!Array.isArray(refs[key])) {
         refs[key] = [ref];
       } else if (refs[key].indexOf(ref) < 0) {
-        // $flow-disable-line
         refs[key].push(ref);
       }
     } else {

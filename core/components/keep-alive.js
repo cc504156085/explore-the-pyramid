@@ -19,7 +19,7 @@ function matches(pattern: string | RegExp | Array<string>, name: string): boolea
   } else if (isRegExp(pattern)) {
     return pattern.test(name);
   }
-  /* istanbul ignore next */
+
   return false;
 }
 
@@ -30,9 +30,7 @@ function pruneCache(keepAliveInstance: any, filter: Function) {
     const cachedNode: ?VNode = cache[key];
     if (cachedNode) {
       const name: ?string = getComponentName(cachedNode.componentOptions);
-      if (name && !filter(name)) {
-        pruneCacheEntry(cache, key, keys, _vnode);
-      }
+      if (name && !filter(name)) pruneCacheEntry(cache, key, keys, _vnode);
     }
   }
 }
@@ -42,10 +40,8 @@ function pruneCacheEntry(cache: VNodeCache, key: string, keys: Array<string>, cu
   // => 获取属性值（组件实例 VNode）
   const cached = cache[key];
 
-  if (cached && (!current || cached.tag !== current.tag)) {
-    // => 销毁组件实例
-    cached.componentInstance.$destroy();
-  }
+  // => 销毁组件实例
+  if (cached && (!current || cached.tag !== current.tag)) cached.componentInstance.$destroy();
 
   // => 置空并从键数组中移除
   cache[key] = null;
@@ -81,12 +77,8 @@ export default {
 
   mounted() {
     // => 实例挂载时 |
-    this.$watch('include', (val) => {
-      pruneCache(this, (name) => matches(val, name));
-    });
-    this.$watch('exclude', (val) => {
-      pruneCache(this, (name) => !matches(val, name));
-    });
+    this.$watch('include', (val) => pruneCache(this, (name) => matches(val, name)));
+    this.$watch('exclude', (val) => pruneCache(this, (name) => !matches(val, name)));
   },
 
   render() {
@@ -97,14 +89,10 @@ export default {
       // check pattern => 检查模式
       const name: ?string = getComponentName(componentOptions);
       const { include, exclude } = this;
-      if (
-        // not included => 不包括
-        (include && (!name || !matches(include, name))) ||
-        // excluded => 被排除在外
-        (exclude && name && matches(exclude, name))
-      ) {
-        return vnode;
-      }
+      
+      // not included => 不包括
+      // excluded => 被排除在外
+      if ((include && (!name || !matches(include, name))) || (exclude && name && matches(exclude, name))) return vnode;
 
       const { cache, keys } = this;
       const key: ?string =
@@ -122,13 +110,12 @@ export default {
         cache[key] = vnode;
         keys.push(key);
         // prune oldest entry => 删除最老的条目（LRU 算法）
-        if (this.max && keys.length > parseInt(this.max)) {
-          pruneCacheEntry(cache, keys[0], keys, this._vnode);
-        }
+        if (this.max && keys.length > parseInt(this.max)) pruneCacheEntry(cache, keys[0], keys, this._vnode);
       }
 
       vnode.data.keepAlive = true;
     }
+
     return vnode || (slot && slot[0]);
   },
 };

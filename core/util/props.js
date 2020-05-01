@@ -17,30 +17,24 @@ export function validateProp(key: string, propOptions: Object, propsData: Object
   const absent = !hasOwn(propsData, key);
   let value = propsData[key];
 
-  // boolean casting => 构建布尔值
+  // => 构建布尔值
   const booleanIndex = getTypeIndex(Boolean, prop.type);
   if (booleanIndex > -1) {
     if (absent && !hasOwn(prop, 'default')) {
       value = false;
     } else if (value === '' || value === hyphenate(key)) {
       /* => 如果布尔值具有更高的优先级，则只将空字符串/同名转换为布尔值 */
-      // only cast empty string / same name to boolean if
-      // boolean has higher priority
       const stringIndex = getTypeIndex(String, prop.type);
 
-      if (stringIndex < 0 || booleanIndex < stringIndex) {
-        value = true;
-      }
+      if (stringIndex < 0 || booleanIndex < stringIndex) value = true;
     }
   }
 
-  // check default value => 检查默认值
+  // => 检查默认值
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key);
 
     /* => 因为默认值是一个新的副本，所以一定要观察它。 */
-    // since the default value is a fresh copy,
-    // make sure to observe it.
     const prevShouldObserve = shouldObserve;
     toggleObserving(true);
 
@@ -49,7 +43,7 @@ export function validateProp(key: string, propOptions: Object, propsData: Object
     toggleObserving(prevShouldObserve);
   }
 
-  // skip validation for weex recycle-list child component props => 跳过 weex 回收列表子组件道具的验证
+  // => 跳过 weex 回收列表子组件道具的验证
   if (process.env.NODE_ENV !== 'production' && !(__WEEX__ && isObject(value) && '@binding' in value)) {
     assertProp(prop, key, value, vm, absent);
   }
@@ -57,18 +51,16 @@ export function validateProp(key: string, propOptions: Object, propsData: Object
   return value;
 }
 
-/** => 获取 prop 的默认值。
- * Get the default value of a prop.
+/**
+ * => 获取 prop 的默认值。
  */
 function getPropDefaultValue(vm: ?Component, prop: PropOptions, key: string): any {
-  // no default, return undefined => 没有默认值，返回 undefined
-  if (!hasOwn(prop, 'default')) {
-    return undefined;
-  }
+  // => 没有默认值，返回 undefined
+  if (!hasOwn(prop, 'default')) return undefined;
 
   const def = prop.default;
 
-  // warn against non-factory defaults for Object & Array => 警告对象和数组的非工厂默认值
+  // => 警告对象和数组的非工厂默认值
   if (process.env.NODE_ENV !== 'production' && isObject(def)) {
     // prop key 的默认值无效：带有对象/数组类型的 prop 必须使用工厂函数来返回默认值。
     warn(
@@ -78,20 +70,16 @@ function getPropDefaultValue(vm: ?Component, prop: PropOptions, key: string): an
   }
 
   /* => 原始 prop 值也未从之前的渲染中定义，返回之前的默认值以避免不必要的观察者触发 */
-  // the raw prop value was also undefined from previous render,
-  // return previous default value to avoid unnecessary watcher trigger
   if (vm && vm.$options.propsData && vm.$options.propsData[key] === undefined && vm._props[key] !== undefined) {
     return vm._props[key];
   }
 
   /* => 对于非函数类型调用工厂函数，如果一个值的原型是函数，那么它就是函数，即使在不同的执行上下文中也是如此 */
-  // call factory function for non-Function types
-  // a value is Function if its prototype is function even across different execution context
   return typeof def === 'function' && getType(prop.type) !== 'Function' ? def.call(vm) : def;
 }
 
-/** => 判断一个 prop 是否有效。
- * Assert whether a prop is valid.
+/**
+ * => 判断一个 prop 是否有效。
  */
 function assertProp(prop: PropOptions, name: string, value: any, vm: ?Component, absent: boolean) {
   if (prop.required && absent) {
@@ -100,18 +88,15 @@ function assertProp(prop: PropOptions, name: string, value: any, vm: ?Component,
     return;
   }
 
-  if (value == null && !prop.required) {
-    return;
-  }
+  if (value == null && !prop.required) return;
 
   let type = prop.type;
   let valid = !type || type === true;
   const expectedTypes = [];
 
   if (type) {
-    if (!Array.isArray(type)) {
-      type = [type];
-    }
+    if (!Array.isArray(type)) type = [type];
+
     for (let i = 0; i < type.length && !valid; i++) {
       const assertedType = assertType(value, type[i]);
       expectedTypes.push(assertedType.expectedType || '');
@@ -142,10 +127,8 @@ function assertType(value: any, type: Function) {
     const t = typeof value;
     valid = t === expectedType.toLowerCase();
 
-    // for primitive wrapper objects => 对于原始包装器对象
-    if (!valid && t === 'object') {
-      valid = value instanceof type;
-    }
+    // => 对于原始包装器对象
+    if (!valid && t === 'object') valid = value instanceof type;
   } else if (expectedType === 'Object') {
     valid = isPlainObject(value);
   } else if (expectedType === 'Array') {
@@ -157,10 +140,8 @@ function assertType(value: any, type: Function) {
   return { valid, expectedType };
 }
 
-/** => 使用函数字符串名检查内置类型，因为在不同的 vms / iframe 之间运行时，简单的相等性检查将失败。
- * Use function string name to check built-in types,
- * because a simple equality check will fail when running
- * across different vms / iframes.
+/**
+ * => 使用函数字符串名检查内置类型，因为在不同的 vms / iframe 之间运行时，简单的相等性检查将失败。
  */
 function getType(fn) {
   const match = fn && fn.toString().match(/^\s*function (\w+)/);
@@ -172,13 +153,10 @@ function isSameType(a, b) {
 }
 
 function getTypeIndex(type, expectedTypes): number {
-  if (!Array.isArray(expectedTypes)) {
-    return isSameType(expectedTypes, type) ? 0 : -1;
-  }
+  if (!Array.isArray(expectedTypes)) return isSameType(expectedTypes, type) ? 0 : -1;
+
   for (let i = 0, len = expectedTypes.length; i < len; i++) {
-    if (isSameType(expectedTypes[i], type)) {
-      return i;
-    }
+    if (isSameType(expectedTypes[i], type)) return i;
   }
   return -1;
 }
@@ -189,15 +167,16 @@ function getInvalidTypeMessage(name, value, expectedTypes) {
   const receivedType = toRawType(value);
   const expectedValue = styleValue(value, expectedType);
   const receivedValue = styleValue(value, receivedType);
-  // check if we need to specify expected value
+
+  // => 检查我们是否需要指定接收值
   if (expectedTypes.length === 1 && isExplicable(expectedType) && !isBoolean(expectedType, receivedType)) {
     message += ` with value ${expectedValue}`;
   }
   message += `, got ${receivedType} `;
-  // check if we need to specify received value
-  if (isExplicable(receivedType)) {
-    message += `with value ${receivedValue}.`;
-  }
+
+  // => 检查我们是否需要指定接收值
+  if (isExplicable(receivedType)) message += `with value ${receivedValue}.`;
+
   return message;
 }
 
