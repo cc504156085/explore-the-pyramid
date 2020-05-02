@@ -226,7 +226,7 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
         }
       },
     },
-    true /* isRenderWatcher => 标识为渲染Watcher（true） */,
+    true /* isRenderWatcher => 标识为渲染 Watcher （ true ） */,
   );
 
   hydrating = false;

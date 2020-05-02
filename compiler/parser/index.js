@@ -44,7 +44,7 @@ const decodeHTMLCached = cached(he.decode);
 
 export const emptySlotScopeToken = `_empty_`;
 
-// configurable state => 可配置的状态
+// => 可配置的状态
 export let warn: any;
 let delimiters;
 let transforms;
@@ -60,9 +60,7 @@ export function createASTElement(tag: string, attrs: Array<ASTAttr>, parent: AST
   return { type: 1, tag, attrsList: attrs, attrsMap: makeAttrsMap(attrs), rawAttrsMap: {}, parent, children: [] };
 }
 
-/** => 将 HTML 字符串转换为 AST 。
- * Convert HTML string to AST.
- */
+/* => 将 HTML 字符串转换为 AST */
 export function parse(template: string, options: CompilerOptions): ASTElement | void {
   warn = options.warn || baseWarn;
 
@@ -199,21 +197,27 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
+
+    /**
+     * 开始标签钩子函数
+     *
+     * @param {*} tag    => 标签名
+     * @param {*} attrs  => 属性
+     * @param {*} unary  => 自闭合标签标识
+     * @param {*} start  => 开始：性能测试 / 警告触发
+     * @param {*} end    => 结束：性能测试 / 警告触发
+     */
     start(tag, attrs, unary, start, end) {
-      // check namespace.
-      // inherit parent ns if there is one
+      // => 检查名称空间，如果有父级的 ns，则继承它（ XML ）
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag);
 
-      // handle IE svg bug
-      /* istanbul ignore if */
-      if (isIE && ns === 'svg') {
-        attrs = guardIESVGBug(attrs);
-      }
+      // => 处理 IE 中 SVG 的 Bug
+      if (isIE && ns === 'svg') attrs = guardIESVGBug(attrs);
 
+      // => 创建元素类型的 AST 节点（ type: 1 ）
       let element: ASTElement = createASTElement(tag, attrs, currentParent);
-      if (ns) {
-        element.ns = ns;
-      }
+
+      if (ns) element.ns = ns;
 
       if (process.env.NODE_ENV !== 'production') {
         if (options.outputSourceRange) {
@@ -246,24 +250,22 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
           );
       }
 
-      // apply pre-transforms
+      // => 调用 pre-transforms
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element;
       }
 
       if (!inVPre) {
         processPre(element);
-        if (element.pre) {
-          inVPre = true;
-        }
+        if (element.pre) inVPre = true;
       }
-      if (platformIsPreTag(element.tag)) {
-        inPre = true;
-      }
+
+      if (platformIsPreTag(element.tag)) inPre = true;
+
       if (inVPre) {
         processRawAttrs(element);
       } else if (!element.processed) {
-        // structural directives
+        // => 结构指令
         processFor(element);
         processIf(element);
         processOnce(element);
@@ -271,9 +273,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
 
       if (!root) {
         root = element;
-        if (process.env.NODE_ENV !== 'production') {
-          checkRootConstraints(root);
-        }
+        if (process.env.NODE_ENV !== 'production') checkRootConstraints(root);
       }
 
       if (!unary) {
@@ -286,12 +286,12 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
 
     end(tag, start, end) {
       const element = stack[stack.length - 1];
-      // pop stack
+
+      // => 出栈
       stack.length -= 1;
       currentParent = stack[stack.length - 1];
-      if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
-        element.end = end;
-      }
+      if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) element.end = end;
+
       closeElement(element);
     },
 
@@ -299,30 +299,31 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
           if (text === template) {
-            warnOnce('Component template requires a root element, rather than just text.', {
-              start,
-            });
+            // => 组件模板需要一个根元素，而不仅仅是文本。
+            warnOnce('Component template requires a root element, rather than just text.', { start });
           } else if ((text = text.trim())) {
+            // => 根元素之外的文本 text 将被忽略。
             warnOnce(`text "${text}" outside root element will be ignored.`, { start });
           }
         }
+
         return;
       }
+
       // IE textarea placeholder bug
-      /* istanbul ignore if */
-      if (isIE && currentParent.tag === 'textarea' && currentParent.attrsMap.placeholder === text) {
-        return;
-      }
+      if (isIE && currentParent.tag === 'textarea' && currentParent.attrsMap.placeholder === text) return;
+
+      // => currentParent 当前节点的父节点
       const children = currentParent.children;
+
       if (inPre || text.trim()) {
         text = isTextTag(currentParent) ? text : decodeHTMLCached(text);
       } else if (!children.length) {
-        // remove the whitespace-only node right after an opening tag
+        // => 在打开标记之后立即删除空白节点
         text = '';
       } else if (whitespaceOption) {
+        // => 在凝聚模式下，删除空白节点(如果它包含换行符)，否则凝聚为单个空间
         if (whitespaceOption === 'condense') {
-          // in condense mode, remove the whitespace node if it contains
-          // line break, otherwise condense to a single space
           text = lineBreakRE.test(text) ? '' : ' ';
         } else {
           text = ' ';
@@ -330,55 +331,51 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       } else {
         text = preserveWhitespace ? ' ' : '';
       }
+
       if (text) {
-        if (!inPre && whitespaceOption === 'condense') {
-          // condense consecutive whitespaces into single space
-          text = text.replace(whitespaceRE, ' ');
-        }
+        // => 将连续的空白压缩为单个空间
+        if (!inPre && whitespaceOption === 'condense') text = text.replace(whitespaceRE, ' ');
+
         let res;
         let child: ?ASTNode;
+
+        // => 使用文本解析器 -> 解析插值表达式 {{ name }} => _s(name)
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
-          child = {
-            type: 2,
-            expression: res.expression,
-            tokens: res.tokens,
-            text,
-          };
+          child = { type: 2, expression: res.expression, tokens: res.tokens, text };
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
-          child = {
-            type: 3,
-            text,
-          };
+          // => 标识普通文本节点
+          child = { type: 3, text };
         }
+
         if (child) {
           if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
             child.start = start;
             child.end = end;
           }
+
+          // => 将构建的 AST 存入父级的 children 属性：<div> {{ name }} </div>
           children.push(child);
         }
       }
     },
 
     comment(text: string, start, end) {
-      // adding anyting as a sibling to the root node is forbidden
-      // comments should still be allowed, but ignored
+      // => 禁止在根节点中添加任何兄弟节点，注释仍然是允许的，但是可以忽略
       if (currentParent) {
-        const child: ASTText = {
-          type: 3,
-          text,
-          isComment: true,
-        };
+        // => 标识注释节点
+        const child: ASTText = { type: 3, text, isComment: true };
+
         if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
           child.start = start;
           child.end = end;
         }
+
         currentParent.children.push(child);
       }
     },
   });
 
-  /* => AST 语法树 */
+  // => 返回 AST （使用对象描述节点）
   return root;
 }
 
@@ -553,8 +550,7 @@ function processOnce(el) {
   }
 }
 
-// handle content being passed to a component as slot, => 处理作为插槽传递给组件的内容
-// e.g. <template slot="xxx">, <div slot-scope="xxx">
+// => 处理作为插槽传递给组件的内容，例如：<template slot="xxx">, <div slot-scope="xxx">
 function processSlotContent(el) {
   let slotScope;
   if (el.tag === 'template') {
@@ -845,7 +841,7 @@ function makeAttrsMap(attrs: Array<Object>): Object {
   return map;
 }
 
-// for script (e.g. type="x/template") or style, do not decode content
+// => 对于脚本(例如 type="x/template" )或 style ，不要解码内容
 function isTextTag(el): boolean {
   return el.tag === 'script' || el.tag === 'style';
 }
@@ -857,7 +853,6 @@ function isForbiddenTag(el): boolean {
 const ieNSBug = /^xmlns:NS\d+/;
 const ieNSPrefix = /^NS\d+:/;
 
-/* istanbul ignore next */
 function guardIESVGBug(attrs) {
   const res = [];
   for (let i = 0; i < attrs.length; i++) {

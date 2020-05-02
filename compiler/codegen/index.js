@@ -37,9 +37,14 @@ export class CodegenState {
 
 export type CodegenResult = { render: string, staticRenderFns: Array<string> };
 
+/* => 将 AST 转换成 render 函数中的内容（代码字符串） */
 export function generate(ast: ASTElement | void, options: CompilerOptions): CodegenResult {
   const state = new CodegenState(options);
+
+  // => 若没有 AST ，生成一个空 div 标签
   const code = ast ? genElement(ast, state) : '_c("div")';
+
+  // => 返回代码字符串
   return {
     render: `with(this){return ${code}}`,
     staticRenderFns: state.staticRenderFns,
@@ -47,9 +52,7 @@ export function generate(ast: ASTElement | void, options: CompilerOptions): Code
 }
 
 export function genElement(el: ASTElement, state: CodegenState): string {
-  if (el.parent) {
-    el.pre = el.pre || el.parent.pre;
-  }
+  if (el.parent) el.pre = el.pre || el.parent.pre;
 
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state);
@@ -64,26 +67,21 @@ export function genElement(el: ASTElement, state: CodegenState): string {
   } else if (el.tag === 'slot') {
     return genSlot(el, state);
   } else {
-    // component or element => 组件或元素
+    // => 组件或元素
     let code;
     if (el.component) {
       code = genComponent(el.component, el, state);
     } else {
       let data;
 
-      if (!el.plain || (el.pre && state.maybeComponent(el))) {
-        data = genData(el, state);
-      }
+      if (!el.plain || (el.pre && state.maybeComponent(el))) data = genData(el, state);
 
       const children = el.inlineTemplate ? null : genChildren(el, state, true);
-      code = `_c('${el.tag}'${
-        data ? `,${data}` : '' // data
-      }${
-        children ? `,${children}` : '' // children
-      })`;
+
+      code = `_c('${el.tag}'${data ? `,${data}` : ''}${children ? `,${children}` : ''})`;
     }
 
-    // module transforms => 模块转换
+    // => 模块转换
     for (let i = 0; i < state.transforms.length; i++) {
       code = state.transforms[i](el, code);
     }
@@ -92,7 +90,7 @@ export function genElement(el: ASTElement, state: CodegenState): string {
   }
 }
 
-// hoist static sub-trees out => 提升静态子树
+// => 提升静态子树
 function genStatic(el: ASTElement, state: CodegenState): string {
   el.staticProcessed = true;
   /** => 一些元素(模板)需要在 v-pre 节点中以不同的方式运行。
@@ -410,7 +408,7 @@ export function genChildren(
   if (children.length) {
     const el: any = children[0];
 
-    // optimize single v-for => 优化单个 v-for
+    // => 优化单个 v-for
     if (children.length === 1 && el.for && el.tag !== 'template' && el.tag !== 'slot') {
       const normalizationType = checkSkip ? (state.maybeComponent(el) ? `,1` : `,0`) : ``;
       return `${(altGenElement || genElement)(el, state)}${normalizationType}`;
@@ -422,10 +420,12 @@ export function genChildren(
   }
 }
 
-// determine the normalization needed for the children array.          => 确定子数组所需的标准化
-// 0: no normalization needed                                          => 0：不需要归一化
-// 1: simple normalization needed (possible 1-level deep nested array) => 1：需要简单的标准化(可能是 1 级深度嵌套数组)
-// 2: full normalization needed                                        => 2：完整的规范化需要
+/**
+ * => 确定子数组所需的标准化
+ * 0：不需要归一化
+ * 1：需要简单的标准化(可能是 1 级深度嵌套数组)
+ * 2：完整的规范化需要
+ */
 function getNormalizationType(children: Array<ASTNode>, maybeComponent: (el: ASTElement) => boolean): number {
   let res = 0;
   for (let i = 0; i < children.length; i++) {
@@ -499,7 +499,6 @@ function genSlot(el: ASTElement, state: CodegenState): string {
 }
 
 /* => componentName 是 el.component ，将它作为参数以避免 flow 的悲观细化 */
-// componentName is el.component, take it as argument to shun flow's pessimistic refinement
 function genComponent(componentName: string, el: ASTElement, state: CodegenState): string {
   const children = el.inlineTemplate ? null : genChildren(el, state, true);
   return `_c(${componentName},${genData(el, state)}${children ? `,${children}` : ''})`;
@@ -525,14 +524,12 @@ function genProps(props: Array<ASTAttr>): string {
   }
 }
 
-/* istanbul ignore next */
 function generateValue(value) {
   if (typeof value === 'string') return transformSpecialNewlines(value);
 
   return JSON.stringify(value);
 }
 
-// #3895, #4268
 function transformSpecialNewlines(text: string): string {
   return text.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 }

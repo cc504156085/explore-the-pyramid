@@ -9,8 +9,8 @@ import { warn, isDef, isUndef, isTrue, isObject, isPrimitive, resolveAsset } fro
 
 import { normalizeChildren, simpleNormalizeChildren } from './helpers/index';
 
-const SIMPLE_NORMALIZE = 1;
-const ALWAYS_NORMALIZE = 2;
+const SIMPLE_NORMALIZE = 1; // => 简单规范化
+const ALWAYS_NORMALIZE = 2; // => 总是规范化
 
 /* => 包装器函数，提供一个更灵活的接口 */
 export function createElement(
@@ -32,6 +32,15 @@ export function createElement(
   return _createElement(context, tag, data, children, normalizationType);
 }
 
+/**
+ * 创建元素节点
+ *
+ * @param {*} context           => 当前组件上下文
+ * @param {*} tag               => 节点名称（元素标签名）
+ * @param {*} data              => 该节点上的数据（ attrs / class / style ...）
+ * @param {*} children          => 当前节点的子节点列表
+ * @param {*} normalizationType => 规范化类型（ SIMPLE_NORMALIZE = 1 / ALWAYS_NORMALIZE = 2 ）
+ */
 export function _createElement(
   context: Component,
   tag?: string | Class<Component> | Function | Object,
@@ -40,17 +49,18 @@ export function _createElement(
   normalizationType?: number,
 ): VNode | Array<VNode> {
   if (isDef(data) && isDef(data.__ob__)) {
-    // => 避免使用观察到的数据对象作为 vnode 数据：JSON.stringify(data) 总是在每个渲染函数中创建新的 vnode 数据对象!
+    // => 避免使用已观测的数据对象作为 vnode 数据：JSON.stringify(data) 。应总是在每个渲染函数中创建新的 vnode 数据对象！
     process.env.NODE_ENV !== 'production' &&
       warn(
         `Avoid using observed data object as vnode data: ${JSON.stringify(data)}. Always create fresh vnode data objects in each render!`,
         context,
       );
 
+    // => 发出警告后使用空注释节点代替
     return createEmptyVNode();
   }
 
-  // => v-bind中的对象语法
+  // => v-bind 中的对象语法
   if (isDef(data) && isDef(data.is)) tag = data.is;
 
   // => 是组件的情况下：设置为假值

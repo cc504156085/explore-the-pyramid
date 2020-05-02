@@ -2,16 +2,15 @@
 
 import { namespaceMap } from 'web/util/index';
 
-/* 所有DOM操作 */
+/* => 所有有关 DOM 的操作（单独封装的原因在于跨平台（ Weex ）实现） */
+
 export function createElement(tagName: string, vnode: VNode): Element {
   const elm = document.createElement(tagName);
-  if (tagName !== 'select') {
-    return elm;
-  }
-  // false or null will remove the attribute but undefined will not
-  if (vnode.data && vnode.data.attrs && vnode.data.attrs.multiple !== undefined) {
-    elm.setAttribute('multiple', 'multiple');
-  }
+  if (tagName !== 'select') return elm;
+
+  // => false 或null 将删除属性，但 undefined 将不删除
+  if (vnode.data && vnode.data.attrs && vnode.data.attrs.multiple !== undefined) elm.setAttribute('multiple', 'multiple');
+
   return elm;
 }
 

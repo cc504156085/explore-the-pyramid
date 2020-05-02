@@ -1,4 +1,5 @@
 /** => 基于 Snabbdom 的虚拟 DOM 修补算法 （ Snabbdom 由 jQuery 之父 西蒙·弗里斯·文杜姆 所写）
+ *
  * Virtual DOM patching algorithm based on Snabbdom by
  * Simon Friis Vindum (@paldepind)
  * Licensed under the MIT License
@@ -86,8 +87,9 @@ export function createPatchFunction(backend) {
     return remove;
   }
 
-  /* => 删除节点 */
+  /* => 删除视图中单个节点 */
   function removeNode(el) {
+    // => 获取当前元素的父级节点
     const parent = nodeOps.parentNode(el);
 
     // => 元素可能已经由于 v-html / v-text 而被删除
@@ -111,7 +113,7 @@ export function createPatchFunction(backend) {
 
   let creatingElmInVPre = 0;
 
-  /* => 创建元素 */
+  /* => 创建元素（包括 元素节点 / 注释节点 / 文本节点），只有这 3 类节点才能被插入 DOM 中渲染 */
   function createElm(vnode, insertedVnodeQueue, parentElm, refElm, nested, ownerArray, index) {
     /**
      * 这个 vnode 在以前的渲染中使用过！
@@ -134,7 +136,8 @@ export function createPatchFunction(backend) {
         if (isUnknownElement(vnode, creatingElmInVPre)) {
           // => 未知自定义元素: tag - 您是否正确注册了组件？对于递归组件，请确保提供 name 选项。
           warn(
-            `Unknown custom element: <${tag}> - did you register the component correctly? For recursive components, make sure to provide the "name" option.`,
+            `Unknown custom element: <${tag}> - did you register the component correctly? 
+             For recursive components, make sure to provide the "name" option.`,
             vnode.context,
           );
         }
@@ -158,6 +161,7 @@ export function createPatchFunction(backend) {
           insert(parentElm, vnode.elm, refElm);
         }
       } else {
+        // => 递归创建子节点
         createChildren(vnode, children, insertedVnodeQueue);
 
         if (isDef(data)) invokeCreateHooks(vnode, insertedVnodeQueue);
@@ -166,9 +170,11 @@ export function createPatchFunction(backend) {
 
       if (process.env.NODE_ENV !== 'production' && data && data.pre) creatingElmInVPre--;
     } else if (isTrue(vnode.isComment)) {
+      // => 创建注释节点（有 isComment 属性标识为注释节点）
       vnode.elm = nodeOps.createComment(vnode.text);
       insert(parentElm, vnode.elm, refElm);
     } else {
+      // => 既不是元素节点也不是注释节点，就只还有一种可能：文本节点
       vnode.elm = nodeOps.createTextNode(vnode.text);
       insert(parentElm, vnode.elm, refElm);
     }
@@ -333,11 +339,12 @@ export function createPatchFunction(backend) {
     }
   }
 
-  /* => 删除节点 */
+  /* => 删除指定 start - end 之间的虚拟节点 */
   function removeVnodes(vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx];
       if (isDef(ch)) {
+        // => 有 tag 属性说明是元素节点
         if (isDef(ch.tag)) {
           removeAndInvokeRemoveHook(ch);
           invokeDestroyHook(ch);

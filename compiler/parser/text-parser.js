@@ -14,9 +14,11 @@ const buildRegex = cached((delimiters) => {
 
 type TextParseResult = { expression: string, tokens: Array<string | { '@binding': string }> };
 
+/* => 文本解析器 */
 export function parseText(text: string, delimiters?: [string, string]): TextParseResult | void {
   const tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE;
 
+  // => 纯文本，返回 undefined
   if (!tagRE.test(text)) return;
 
   const tokens = [];
@@ -26,18 +28,21 @@ export function parseText(text: string, delimiters?: [string, string]): TextPars
   while ((match = tagRE.exec(text))) {
     index = match.index;
 
-    // push text token => 存入文本标记
+    // => 存入文本标记，将 {{ 之前的文本存入 tokens 数组
     if (index > lastIndex) {
       rawTokens.push((tokenValue = text.slice(lastIndex, index)));
       tokens.push(JSON.stringify(tokenValue));
     }
 
-    // tag token => 标签标记
+    // => 标签标记
     const exp = parseFilters(match[1].trim());
 
-    /* => _s(exp) => toString(exp) */
+    // => _s(exp) => toString(exp) 将表达式包装进 _s() 方法，且存入数组
     tokens.push(`_s(${exp})`);
+
     rawTokens.push({ '@binding': exp });
+
+    // => 设置 lastIndex 保证下一轮循环时，正则表达式不再重复匹配已经解析过的文本
     lastIndex = index + match[0].length;
   }
 
@@ -46,5 +51,6 @@ export function parseText(text: string, delimiters?: [string, string]): TextPars
     tokens.push(JSON.stringify(tokenValue));
   }
 
+  // => 最终以 + 号连接："Hello {{ name }}" => '"Hello " + _s(name)'
   return { expression: tokens.join('+'), tokens: rawTokens };
 }
