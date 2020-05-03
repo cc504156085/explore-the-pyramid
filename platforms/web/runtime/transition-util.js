@@ -21,7 +21,7 @@ export function resolveTransition(def?: string | Object): ?Object {
   }
 }
 
-const autoCssTransition: (name: string) => Object = cached(name => {
+const autoCssTransition: (name: string) => Object = cached((name) => {
   return {
     enterClass: `${name}-enter`,
     enterToClass: `${name}-enter-to`,
@@ -58,7 +58,7 @@ const raf = inBrowser
   ? window.requestAnimationFrame
     ? window.requestAnimationFrame.bind(window)
     : setTimeout
-  : /* istanbul ignore next */ fn => fn();
+  : /* istanbul ignore next */ (fn) => fn();
 
 export function nextFrame(fn: Function) {
   raf(() => {
@@ -90,7 +90,7 @@ export function whenTransitionEnds(el: Element, expectedType: ?string, cb: Funct
     el.removeEventListener(event, onEnd);
     cb();
   };
-  const onEnd = e => {
+  const onEnd = (e) => {
     if (e.target === el) {
       if (++ended >= propCount) {
         end();
@@ -119,9 +119,7 @@ export function getTransitionInfo(
   const styles: any = window.getComputedStyle(el);
   // JSDOM may return undefined for transition properties
   const transitionDelays: Array<string> = (styles[transitionProp + 'Delay'] || '').split(', ');
-  const transitionDurations: Array<string> = (styles[transitionProp + 'Duration'] || '').split(
-    ', ',
-  );
+  const transitionDurations: Array<string> = (styles[transitionProp + 'Duration'] || '').split(', ');
   const transitionTimeout: number = getTimeout(transitionDelays, transitionDurations);
   const animationDelays: Array<string> = (styles[animationProp + 'Delay'] || '').split(', ');
   const animationDurations: Array<string> = (styles[animationProp + 'Duration'] || '').split(', ');
@@ -146,14 +144,9 @@ export function getTransitionInfo(
   } else {
     timeout = Math.max(transitionTimeout, animationTimeout);
     type = timeout > 0 ? (transitionTimeout > animationTimeout ? TRANSITION : ANIMATION) : null;
-    propCount = type
-      ? type === TRANSITION
-        ? transitionDurations.length
-        : animationDurations.length
-      : 0;
+    propCount = type ? (type === TRANSITION ? transitionDurations.length : animationDurations.length) : 0;
   }
-  const hasTransform: boolean =
-    type === TRANSITION && transformRE.test(styles[transitionProp + 'Property']);
+  const hasTransform: boolean = type === TRANSITION && transformRE.test(styles[transitionProp + 'Property']);
   return {
     type,
     timeout,

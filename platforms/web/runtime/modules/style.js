@@ -29,7 +29,7 @@ const setProp = (el, name, val) => {
 const vendorNames = ['Webkit', 'Moz', 'ms'];
 
 let emptyStyle;
-const normalize = cached(function(prop) {
+const normalize = cached(function (prop) {
   emptyStyle = emptyStyle || document.createElement('div').style;
   prop = camelize(prop);
   if (prop !== 'filter' && prop in emptyStyle) {
@@ -48,12 +48,7 @@ function updateStyle(oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const data = vnode.data;
   const oldData = oldVnode.data;
 
-  if (
-    isUndef(data.staticStyle) &&
-    isUndef(data.style) &&
-    isUndef(oldData.staticStyle) &&
-    isUndef(oldData.style)
-  ) {
+  if (isUndef(data.staticStyle) && isUndef(data.style) && isUndef(oldData.staticStyle) && isUndef(oldData.style)) {
     return;
   }
 

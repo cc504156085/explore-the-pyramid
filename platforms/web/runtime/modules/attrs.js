@@ -4,15 +4,7 @@ import { isIE, isIE9, isEdge } from 'core/util/env';
 
 import { extend, isDef, isUndef } from 'shared/util';
 
-import {
-  isXlink,
-  xlinkNS,
-  getXlinkProp,
-  isBooleanAttr,
-  isEnumeratedAttr,
-  isFalsyAttrValue,
-  convertEnumeratedValue,
-} from 'web/util/index';
+import { isXlink, xlinkNS, getXlinkProp, isBooleanAttr, isEnumeratedAttr, isFalsyAttrValue, convertEnumeratedValue } from 'web/util/index';
 
 function updateAttrs(oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const opts = vnode.componentOptions;
@@ -90,15 +82,8 @@ function baseSetAttr(el, key, value) {
     // <textarea>... block the first input event and remove the blocker
     // immediately.
     /* istanbul ignore if */
-    if (
-      isIE &&
-      !isIE9 &&
-      el.tagName === 'TEXTAREA' &&
-      key === 'placeholder' &&
-      value !== '' &&
-      !el.__ieph
-    ) {
-      const blocker = e => {
+    if (isIE && !isIE9 && el.tagName === 'TEXTAREA' && key === 'placeholder' && value !== '' && !el.__ieph) {
+      const blocker = (e) => {
         e.stopImmediatePropagation();
         el.removeEventListener('input', blocker);
       };

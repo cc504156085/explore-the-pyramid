@@ -11,14 +11,7 @@ import { extend, noop } from 'shared/util';
 import { mountComponent } from 'core/instance/lifecycle';
 import { devtools, inBrowser } from 'core/util/index';
 
-import {
-  query,
-  mustUseProp,
-  isReservedTag,
-  isReservedAttr,
-  getTagNamespace,
-  isUnknownElement,
-} from 'web/util/index';
+import { query, mustUseProp, isReservedTag, isReservedAttr, getTagNamespace, isUnknownElement } from 'web/util/index';
 
 import { patch } from './patch';
 import platformDirectives from './directives/index';
@@ -40,7 +33,7 @@ extend(Vue.options.components, platformComponents);
 Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
 // public mount method => 公共 $mount 方法，挂载到 Vue 的原型
-Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Component {
+Vue.prototype.$mount = function (el?: string | Element, hydrating?: boolean): Component {
   /* => 如果 el 元素存在且处于浏览器运行时，则获取该元素的内容 */
   el = el && inBrowser ? query(el) : undefined;
 
@@ -58,8 +51,7 @@ if (inBrowser) {
       } else if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
         /* => 下载Vue Devtools扩展以获得更好的开发体验 */
         console[console.info ? 'info' : 'log'](
-          'Download the Vue Devtools extension for a better development experience:\n' +
-            'https://github.com/vuejs/vue-devtools',
+          'Download the Vue Devtools extension for a better development experience:\n' + 'https://github.com/vuejs/vue-devtools',
         );
       }
     }

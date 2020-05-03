@@ -6,13 +6,7 @@ import { activeInstance } from 'core/instance/lifecycle';
 
 import { once, isDef, isUndef, isObject, toNumber } from 'shared/util';
 
-import {
-  nextFrame,
-  resolveTransition,
-  whenTransitionEnds,
-  addTransitionClass,
-  removeTransitionClass,
-} from '../transition-util';
+import { nextFrame, resolveTransition, whenTransitionEnds, addTransitionClass, removeTransitionClass } from '../transition-util';
 
 export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
   const el: any = vnode.elm;
@@ -251,17 +245,9 @@ export function leave(vnode: VNodeWithData, rm: Function) {
 // only used in dev mode
 function checkDuration(val, name, vnode) {
   if (typeof val !== 'number') {
-    warn(
-      `<transition> explicit ${name} duration is not a valid number - ` +
-        `got ${JSON.stringify(val)}.`,
-      vnode.context,
-    );
+    warn(`<transition> explicit ${name} duration is not a valid number - ` + `got ${JSON.stringify(val)}.`, vnode.context);
   } else if (isNaN(val)) {
-    warn(
-      `<transition> explicit ${name} duration is NaN - ` +
-        'the duration expression might be incorrect.',
-      vnode.context,
-    );
+    warn(`<transition> explicit ${name} duration is NaN - ` + 'the duration expression might be incorrect.', vnode.context);
   }
 }
 

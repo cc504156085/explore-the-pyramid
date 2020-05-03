@@ -121,7 +121,6 @@ function isStatic(node: ASTNode): boolean {
 function isDirectChildOfTemplateFor(node: ASTElement): boolean {
   while (node.parent) {
     node = node.parent;
-
     if (node.tag !== 'template') return false;
 
     // => 带 v-for 的 template 标签

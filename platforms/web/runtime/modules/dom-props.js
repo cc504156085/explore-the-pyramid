@@ -79,12 +79,7 @@ function updateDOMProps(oldVnode: VNodeWithData, vnode: VNodeWithData) {
 type acceptValueElm = HTMLInputElement | HTMLSelectElement | HTMLOptionElement;
 
 function shouldUpdateValue(elm: acceptValueElm, checkVal: string): boolean {
-  return (
-    !elm.composing &&
-    (elm.tagName === 'OPTION' ||
-      isNotInFocusAndDirty(elm, checkVal) ||
-      isDirtyWithModifiers(elm, checkVal))
-  );
+  return !elm.composing && (elm.tagName === 'OPTION' || isNotInFocusAndDirty(elm, checkVal) || isDirtyWithModifiers(elm, checkVal));
 }
 
 function isNotInFocusAndDirty(elm: acceptValueElm, checkVal: string): boolean {

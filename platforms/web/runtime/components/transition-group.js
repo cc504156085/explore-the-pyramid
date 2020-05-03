@@ -16,13 +16,7 @@ import { addClass, removeClass } from '../class-util';
 import { transitionProps, extractTransitionData } from './transition';
 import { setActiveInstance } from 'core/instance/lifecycle';
 
-import {
-  hasTransition,
-  getTransitionInfo,
-  transitionEndEvent,
-  addTransitionClass,
-  removeTransitionClass,
-} from '../transition-util';
+import { hasTransition, getTransitionInfo, transitionEndEvent, addTransitionClass, removeTransitionClass } from '../transition-util';
 
 const props = extend({ tag: String, moveClass: String }, transitionProps);
 

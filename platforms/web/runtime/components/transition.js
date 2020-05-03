@@ -5,11 +5,7 @@
 
 import { warn } from 'core/util/index';
 import { camelize, extend, isPrimitive } from 'shared/util';
-import {
-  mergeVNodeHook,
-  isAsyncPlaceholder,
-  getFirstComponentChild,
-} from 'core/vdom/helpers/index';
+import { mergeVNodeHook, isAsyncPlaceholder, getFirstComponentChild } from 'core/vdom/helpers/index';
 
 export const transitionProps = {
   name: String,
@@ -78,7 +74,7 @@ function isSameChild(child: VNode, oldChild: VNode): boolean {
 
 const isNotTextNode = (c: VNode) => c.tag || isAsyncPlaceholder(c);
 
-const isVShowDirective = d => d.name === 'show';
+const isVShowDirective = (d) => d.name === 'show';
 
 export default {
   name: 'transition',
@@ -100,10 +96,7 @@ export default {
 
     // warn multiple elements
     if (process.env.NODE_ENV !== 'production' && children.length > 1) {
-      warn(
-        '<transition> can only be used on a single element. Use ' + '<transition-group> for lists.',
-        this.$parent,
-      );
+      warn('<transition> can only be used on a single element. Use ' + '<transition-group> for lists.', this.$parent);
     }
 
     const mode: string = this.mode;
@@ -148,9 +141,7 @@ export default {
           : id + child.key
         : child.key;
 
-    const data: Object = ((child.data || (child.data = {})).transition = extractTransitionData(
-      this,
-    ));
+    const data: Object = ((child.data || (child.data = {})).transition = extractTransitionData(this));
     const oldRawChild: VNode = this._vnode;
     const oldChild: VNode = getRealChild(oldRawChild);
 
@@ -190,7 +181,7 @@ export default {
         };
         mergeVNodeHook(data, 'afterEnter', performLeave);
         mergeVNodeHook(data, 'enterCancelled', performLeave);
-        mergeVNodeHook(oldData, 'delayLeave', leave => {
+        mergeVNodeHook(oldData, 'delayLeave', (leave) => {
           delayedLeave = leave;
         });
       }

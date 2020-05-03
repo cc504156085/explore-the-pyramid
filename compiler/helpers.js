@@ -5,11 +5,9 @@ import { parseFilters } from './parser/filter-parser';
 
 type Range = { start?: number, end?: number };
 
-/* eslint-disable no-unused-vars */
 export function baseWarn(msg: string, range?: Range) {
   console.error(`[Vue compiler]: ${msg}`);
 }
-/* eslint-enable no-unused-vars */
 
 export function pluckModuleFunction<F: Function>(modules: ?Array<Object>, key: string): Array<F> {
   return modules ? modules.map((m) => m[key]).filter((_) => _) : [];
@@ -26,7 +24,7 @@ export function addAttr(el: ASTElement, name: string, value: any, range?: Range,
   el.plain = false;
 }
 
-// add a raw attr (use this in preTransforms)
+// => 添加一个原始的 attr (在预转换中使用)
 export function addRawAttr(el: ASTElement, name: string, value: any, range?: Range) {
   el.attrsMap[name] = value;
   el.attrsList.push(rangeSetItem({ name, value }, range));
@@ -47,7 +45,8 @@ export function addDirective(
 }
 
 function prependModifierMarker(symbol: string, name: string, dynamic?: boolean): string {
-  return dynamic ? `_p(${name},"${symbol}")` : symbol + name; // mark the event as captured
+  // => 将事件标记为已捕获
+  return dynamic ? `_p(${name},"${symbol}")` : symbol + name;
 }
 
 export function addHandler(
@@ -61,15 +60,14 @@ export function addHandler(
   dynamic?: boolean,
 ) {
   modifiers = modifiers || emptyObject;
-  // warn prevent and passive modifier
-  /* istanbul ignore if */
+
+  // => 警告预防和被动修改
   if (process.env.NODE_ENV !== 'production' && warn && modifiers.prevent && modifiers.passive) {
-    warn("passive and prevent can't be used together. " + "Passive handler can't prevent default event.", range);
+    // => passive 和 prevent 不能同时使用。 passive 处理程序不能阻止默认事件。
+    warn("passive and prevent can't be used together. Passive handler can't prevent default event.", range);
   }
 
-  // normalize click.right and click.middle since they don't actually fire
-  // this is technically browser-specific, but at least for now browsers are
-  // the only target envs that have right/middle clicks.
+  // => 规范化右击/中击。因为他们实际上并没有触发，这在技术上是特定于浏览器的，但至少现在浏览器是唯一的目标事件有右/中点击。
   if (modifiers.right) {
     if (dynamic) {
       name = `(${name})==='click'?'contextmenu':(${name})`;
@@ -85,16 +83,17 @@ export function addHandler(
     }
   }
 
-  // check capture modifier
+  // => 检查捕获修饰符
   if (modifiers.capture) {
     delete modifiers.capture;
     name = prependModifierMarker('!', name, dynamic);
   }
+
   if (modifiers.once) {
     delete modifiers.once;
     name = prependModifierMarker('~', name, dynamic);
   }
-  /* istanbul ignore if */
+
   if (modifiers.passive) {
     delete modifiers.passive;
     name = prependModifierMarker('&', name, dynamic);
@@ -109,12 +108,9 @@ export function addHandler(
   }
 
   const newHandler: any = rangeSetItem({ value: value.trim(), dynamic }, range);
-  if (modifiers !== emptyObject) {
-    newHandler.modifiers = modifiers;
-  }
+  if (modifiers !== emptyObject) newHandler.modifiers = modifiers;
 
   const handlers = events[name];
-  /* istanbul ignore if */
   if (Array.isArray(handlers)) {
     important ? handlers.unshift(newHandler) : handlers.push(newHandler);
   } else if (handlers) {
@@ -132,20 +128,17 @@ export function getRawBindingAttr(el: ASTElement, name: string) {
 
 export function getBindingAttr(el: ASTElement, name: string, getStatic?: boolean): ?string {
   const dynamicValue = getAndRemoveAttr(el, ':' + name) || getAndRemoveAttr(el, 'v-bind:' + name);
+
   if (dynamicValue != null) {
     return parseFilters(dynamicValue);
   } else if (getStatic !== false) {
     const staticValue = getAndRemoveAttr(el, name);
-    if (staticValue != null) {
-      return JSON.stringify(staticValue);
-    }
+    if (staticValue != null) return JSON.stringify(staticValue);
   }
 }
 
-// note: this only removes the attr from the Array (attrsList) so that it
-// doesn't get processed by processAttrs.
-// By default it does NOT remove it from the map (attrsMap) because the map is
-// needed during codegen.
+// => 注意：这只会从数组( attrsList )中删除 attr ，因此 processAttrs 不会处理它。
+// => 默认情况下，它不会将其从映射( attrsMap )中删除，因为在 codegen 期间需要映射。
 export function getAndRemoveAttr(el: ASTElement, name: string, removeFromMap?: boolean): ?string {
   let val;
   if ((val = el.attrsMap[name]) != null) {
@@ -157,9 +150,9 @@ export function getAndRemoveAttr(el: ASTElement, name: string, removeFromMap?: b
       }
     }
   }
-  if (removeFromMap) {
-    delete el.attrsMap[name];
-  }
+
+  if (removeFromMap) delete el.attrsMap[name];
+
   return val;
 }
 
@@ -176,12 +169,9 @@ export function getAndRemoveAttrByRegex(el: ASTElement, name: RegExp) {
 
 function rangeSetItem(item: any, range?: { start?: number, end?: number }) {
   if (range) {
-    if (range.start != null) {
-      item.start = range.start;
-    }
-    if (range.end != null) {
-      item.end = range.end;
-    }
+    if (range.start != null) item.start = range.start;
+    if (range.end != null) item.end = range.end;
   }
+
   return item;
 }

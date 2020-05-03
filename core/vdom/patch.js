@@ -20,6 +20,19 @@ import { warn, isDef, isUndef, isTrue, makeMap, isRegExp, isPrimitive } from '..
 
 export const emptyNode = new VNode('', {}, []);
 
+/**
+ * => 虚拟 DOM 在渲染时会触发的所有钩子及其触发时机
+ *
+ * init       => 已添加 VNode ，在修补期间发现新的虚拟节点时被触发
+ * create     => 已经基于 VNode 创建了 DOM 元素
+ * activate   => keep-alive 组件被创建
+ * insert     => 一旦 VNode 对应的 DOM 元素被插入到视图中并且修补周期的其余部分已经完成，就会被触发
+ * prepatch   => 一个元素即将被修补
+ * update     => 一个元素正在被更新
+ * postpatch  => 一个元素已经被修改
+ * destroy    => 它的 DOM 元素从 DOM 中移除时或者它的父元素从 DOM 中移除时触发
+ * remove     => VNode 对应的 DOM 元素从 DOM 中被移除时触发（只有一个元素从父元素中被移除时会触发，如果它是被移除元素的子元素，则不会触发）
+ */
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy'];
 
 /* => 比较两个节点是否相同 分别比较他们的 key / tag / comment / data / inputType ... */

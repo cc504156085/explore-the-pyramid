@@ -369,26 +369,30 @@ export function mergeOptions(parent: Object, child: Object, vm?: Component): Obj
 }
 
 /**
- * Resolve an asset.
- * This function is used because child instances need access
- * to assets defined in its ancestor chain.
+ * 解析一个 asset （指令/过滤器/组件）
+ * 之所以使用此函数，是因为子实例需要访问其祖先链中定义的 asset 。
  */
 export function resolveAsset(options: Object, type: string, id: string, warnMissing?: boolean): any {
-  /* istanbul ignore if */
-  if (typeof id !== 'string') {
-    return;
-  }
+  // => 过滤器名称必须是字符串
+  if (typeof id !== 'string') return;
+
   const assets = options[type];
-  // check local registration variations first
+  // => 首先检查本地注册变量
   if (hasOwn(assets, id)) return assets[id];
+
+  // => 驼峰化后再检查
   const camelizedId = camelize(id);
   if (hasOwn(assets, camelizedId)) return assets[camelizedId];
+
+  // => 首字母大写后再检查
   const PascalCaseId = capitalize(camelizedId);
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId];
-  // fallback to prototype chain
+
+  // => 退回到检查原型链（直接访问属性，因为全局注册的 asset 会保存在 Vue 构造函数中，但过滤器除外：全局过滤器与组件过滤器合并到了 this.$options.filters 中）
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId];
-  if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
-    warn(`Failed to resolve ${type.slice(0, -1)}: ${id}`, options);
-  }
+
+  // => 未能解析 asset
+  if (process.env.NODE_ENV !== 'production' && warnMissing && !res) warn(`Failed to resolve ${type.slice(0, -1)}: ${id}`, options);
+
   return res;
 }

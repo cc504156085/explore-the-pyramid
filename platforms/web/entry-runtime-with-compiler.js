@@ -49,19 +49,15 @@ Vue.prototype.$mount = function (el?: string | Element, hydrating?: boolean): Co
           /* => 获取 id DOM 里面的 HTML 内容 */
           template = idToTemplate(template);
 
-          if (process.env.NODE_ENV !== 'production' && !template) {
-            /* => 模板元素未找到或为空元素 */
-            warn(`Template element not found or is empty: ${options.template}`, this);
-          }
+          /* => 模板元素未找到或为空元素 */
+          if (process.env.NODE_ENV !== 'production' && !template) warn(`Template element not found or is empty: ${options.template}`, this);
         }
       } else if (template.nodeType) {
         /* => 如果模板的节点类型存在，则说明他是 DOM 节点。拿到其里面的 HTML 内容 */
         template = template.innerHTML;
       } else {
-        if (process.env.NODE_ENV !== 'production') {
-          /* => 模板既不是元素节点也不是字符串。=> 模板选项无效 */
-          warn(`invalid template option: ${template}`, this);
-        }
+        /* => 模板既不是元素节点也不是字符串。=> 模板选项无效 */
+        if (process.env.NODE_ENV !== 'production') warn(`invalid template option: ${template}`, this);
 
         return this;
       }
@@ -96,9 +92,8 @@ Vue.prototype.$mount = function (el?: string | Element, hydrating?: boolean): Co
   return mount.call(this, el, hydrating);
 };
 
-/** => 获取元素的 outerHTML ，同时处理 IE 中的 SVG 元素（兼容 IE ）。
- * Get outerHTML of elements, taking care
- * of SVG elements in IE as well.
+/** 
+ * => 获取元素的 outerHTML ，同时处理 IE 中的 SVG 元素（兼容 IE ）。
  */
 function getOuterHTML(el: Element): string {
   /* => 如果该属性存在，直接返回 */

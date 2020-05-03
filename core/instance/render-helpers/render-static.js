@@ -1,7 +1,7 @@
 /* @flow */
 
 /**
- * Runtime helper for rendering static trees.
+ * 用于渲染静态树的运行时助手。
  */
 export function renderStatic(index: number, isInFor: boolean): VNode | Array<VNode> {
   const cached = this._staticTrees || (this._staticTrees = []);

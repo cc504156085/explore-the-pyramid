@@ -3,18 +3,13 @@
 import { extend, warn, isObject } from 'core/util/index';
 
 /**
- * Runtime helper for rendering <slot>
+ * 渲染 <slot /> 的运行时助手
  */
-export function renderSlot(
-  name: string,
-  fallback: ?Array<VNode>,
-  props: ?Object,
-  bindObject: ?Object,
-): ?Array<VNode> {
+export function renderSlot(name: string, fallback: ?Array<VNode>, props: ?Object, bindObject: ?Object): ?Array<VNode> {
   const scopedSlotFn = this.$scopedSlots[name];
   let nodes;
   if (scopedSlotFn) {
-    // scoped slot
+    // => 作用域插槽
     props = props || {};
     if (bindObject) {
       if (process.env.NODE_ENV !== 'production' && !isObject(bindObject)) {

@@ -3,12 +3,9 @@
 import { isObject, isDef, hasSymbol } from 'core/util/index';
 
 /**
- * Runtime helper for rendering v-for lists.
+ * => 用于渲染 v-for 列表的运行时助手。
  */
-export function renderList(
-  val: any,
-  render: (val: any, keyOrIndex: string | number, index?: number) => VNode,
-): ?Array<VNode> {
+export function renderList(val: any, render: (val: any, keyOrIndex: string | number, index?: number) => VNode): ?Array<VNode> {
   let ret: ?Array<VNode>, i, l, keys, key;
   if (Array.isArray(val) || typeof val === 'string') {
     ret = new Array(val.length);
@@ -41,6 +38,6 @@ export function renderList(
   if (!isDef(ret)) {
     ret = [];
   }
-  (ret: any)._isVList = true;
+  ret._isVList = true;
   return ret;
 }
