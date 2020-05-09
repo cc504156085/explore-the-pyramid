@@ -6,8 +6,11 @@ import { getAndRemoveAttr, getBindingAttr, baseWarn } from 'compiler/helpers';
 function transformNode(el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn;
   const staticClass = getAndRemoveAttr(el, 'class');
+
   if (process.env.NODE_ENV !== 'production' && staticClass) {
     const res = parseText(staticClass, options.delimiters);
+
+    // => 属性内插被删除，使用 v-bind 或冒号代替。例如，使用 <div class="{{ val }}"> 而不是 <div :class="val"> 。
     if (res) {
       warn(
         `class="${staticClass}": ` +
@@ -18,14 +21,17 @@ function transformNode(el: ASTElement, options: CompilerOptions) {
       );
     }
   }
+
   if (staticClass) el.staticClass = JSON.stringify(staticClass);
 
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */);
+
   if (classBinding) el.classBinding = classBinding;
 }
 
 function genData(el: ASTElement): string {
   let data = '';
+
   if (el.staticClass) data += `staticClass:${el.staticClass},`;
 
   if (el.classBinding) data += `class:${el.classBinding},`;
@@ -33,8 +39,4 @@ function genData(el: ASTElement): string {
   return data;
 }
 
-export default {
-  staticKeys: ['staticClass'],
-  transformNode,
-  genData,
-};
+export default { staticKeys: ['staticClass'], transformNode, genData };

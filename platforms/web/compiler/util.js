@@ -4,8 +4,7 @@ import { makeMap } from 'shared/util';
 
 export const isUnaryTag = makeMap('area,base,br,col,embed,frame,hr,img,input,isindex,keygen, link,meta,param,source,track,wbr');
 
-// Elements that you can, intentionally, leave open => 您可以故意保留打开的元素(以及关闭它们自己的元素)
-// (and which close themselves)
+// => 您可以故意保留打开的元素(以及关闭它们自己的元素)
 export const canBeLeftOpenTag = makeMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr,source');
 
 // HTML5 tags https://html.spec.whatwg.org/multipage/indices.html#elements-3

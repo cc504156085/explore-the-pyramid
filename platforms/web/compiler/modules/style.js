@@ -7,8 +7,8 @@ import { getAndRemoveAttr, getBindingAttr, baseWarn } from 'compiler/helpers';
 function transformNode(el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn;
   const staticStyle = getAndRemoveAttr(el, 'style');
+
   if (staticStyle) {
-    /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production') {
       const res = parseText(staticStyle, options.delimiters);
       if (res) {
@@ -25,11 +25,13 @@ function transformNode(el: ASTElement, options: CompilerOptions) {
   }
 
   const styleBinding = getBindingAttr(el, 'style', false /* getStatic */);
+
   if (styleBinding) el.styleBinding = styleBinding;
 }
 
 function genData(el: ASTElement): string {
   let data = '';
+
   if (el.staticStyle) data += `staticStyle:${el.staticStyle},`;
 
   if (el.styleBinding) data += `style:(${el.styleBinding}),`;

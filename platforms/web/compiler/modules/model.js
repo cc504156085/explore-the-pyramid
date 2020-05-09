@@ -32,11 +32,11 @@ function preTransformNode(el: ASTElement, options: CompilerOptions) {
 
       // 1. checkbox
       const branch0 = cloneASTElement(el);
-      // process for on the main node => 主节点上的进程
+      // => 主节点上的进程
       processFor(branch0);
       addRawAttr(branch0, 'type', 'checkbox');
       processElement(branch0, options);
-      branch0.processed = true; // prevent it from double-processed => 防止重复加工
+      branch0.processed = true; // => 防止重复加工
       branch0.if = `(${typeBinding})==='checkbox'` + ifConditionExtra;
       addIfCondition(branch0, { exp: branch0.if, block: branch0 });
 
