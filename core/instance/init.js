@@ -18,48 +18,42 @@ export function initMixin(Vue: Class<Component>) {
     /* => 当前Vue实例 */
     const vm: Component = this;
 
-    // a uid => 每个Vue实例对应一个ID
+    // => 每个Vue实例对应一个ID
     vm._uid = uid++;
 
-    // a flag to avoid this being observed => 标记该实例不需要被观测
+    // => 标记该实例不需要被观测
     vm._isVue = true;
 
-    // merge options => 合并选项
+    // => 合并选项
     if (options && options._isComponent) {
       /* => 优化内部组件实例化，因为动态选项合并速度很慢，而且没有一个内部组件选项需要特殊处理。 */
-      // optimize internal component instantiation
-      // since dynamic options merging is pretty slow, and none of the
-      // internal component options needs special treatment.
       initInternalComponent(vm, options);
     } else {
       /* 若没有提供 options 则为 options 合并一些额外的属性 */
       vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm);
     }
 
-    /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       initProxy(vm);
     } else {
       vm._renderProxy = vm;
     }
 
-    // expose real self => 暴露真实的自我
+    // => 暴露真实的 this
     vm._self = vm;
 
     initLifecycle(vm); // => 初始化当前实例的属性、方法、父子关系
     initEvents(vm); // => 初始化事件（父组件传给子组件的事件）、同时创建事件池对象，存储事件
     initRender(vm); // => 初始化渲染
     callHook(vm, 'beforeCreate'); // => 调用第一个生命周期 hook
-    initInjections(vm); // resolve injections before data/props => 在初始化数据之前解析注入
+    initInjections(vm); // => 在初始化数据之前解析注入
     initState(vm); // => 初始化数据（data，props）
-    initProvide(vm); // resolve provide after data/props => 在初始化数据之后解析注入的数据
+    initProvide(vm); // => 在初始化数据之后解析注入的数据
     callHook(vm, 'created'); // => 调用第二个生命周期 hook，到此，所有的数据、事件、状态相关的东西已经初始化完毕
 
     /* => 以上代码用于创建组件（初始化一个组件所需要的各个东西） */
-    if (vm.$options.el) {
-      /* => 如果提供了 el ，将组件挂载到 el 元素里。否则需要手动调用 $mount */
-      vm.$mount(vm.$options.el);
-    }
+    /* => 如果提供了 el ，将组件挂载到 el 元素里。否则需要手动调用 $mount */
+    vm.$options.el && vm.$mount(vm.$options.el);
   };
 }
 
@@ -67,7 +61,7 @@ export function initMixin(Vue: Class<Component>) {
 export function initInternalComponent(vm: Component, options: InternalComponentOptions) {
   const opts = (vm.$options = Object.create(vm.constructor.options));
 
-  // doing this because it's faster than dynamic enumeration. => 这样做是因为它比动态枚举快。
+  // => 这样做是因为它比动态枚举快。
   const parentVnode = options._parentVnode;
   opts.parent = options.parent;
   opts._parentVnode = parentVnode;
@@ -91,21 +85,18 @@ export function resolveConstructorOptions(Ctor: Class<Component>) {
     const superOptions = resolveConstructorOptions(Ctor.super);
     const cachedSuperOptions = Ctor.superOptions;
     if (superOptions !== cachedSuperOptions) {
-      // super option changed, => 改变超类选项
-      // need to resolve new options. => 需要解决新的选项。
+      // => 改变超类选项
+      // => 需要解决新的选项。
       Ctor.superOptions = superOptions;
 
-      // check if there are any late-modified/attached options (#4976) => 检查是否有任何后期修改/附加的选项
+      // => 检查是否有任何后期修改/附加的选项
       const modifiedOptions = resolveModifiedOptions(Ctor);
 
-      // update base extend options => 更新基本扩展选项
-      if (modifiedOptions) {
-        extend(Ctor.extendOptions, modifiedOptions);
-      }
+      // => 更新基本扩展选项
+      if (modifiedOptions) extend(Ctor.extendOptions, modifiedOptions);
+
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions);
-      if (options.name) {
-        options.components[options.name] = Ctor;
-      }
+      if (options.name) options.components[options.name] = Ctor;
     }
   }
   return options;
