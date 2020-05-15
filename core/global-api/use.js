@@ -1,5 +1,3 @@
-/* @flow */
-
 import { toArray } from '../util/index';
 
 export function initUse(Vue: GlobalAPI) {
