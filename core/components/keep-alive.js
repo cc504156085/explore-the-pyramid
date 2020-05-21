@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isRegExp, remove } from 'shared/util';
 import { getFirstComponentChild } from 'core/vdom/helpers/index';
 
@@ -70,9 +68,7 @@ export default {
 
   destroyed() {
     // => 实例销毁时 | 挨个删除缓存条目
-    for (const key in this.cache) {
-      pruneCacheEntry(this.cache, key, this.keys);
-    }
+    for (const key in this.cache) pruneCacheEntry(this.cache, key, this.keys);
   },
 
   mounted() {
@@ -89,7 +85,7 @@ export default {
       // check pattern => 检查模式
       const name: ?string = getComponentName(componentOptions);
       const { include, exclude } = this;
-      
+
       // not included => 不包括
       // excluded => 被排除在外
       if ((include && (!name || !matches(include, name))) || (exclude && name && matches(exclude, name))) return vnode;
@@ -97,19 +93,18 @@ export default {
       const { cache, keys } = this;
       const key: ?string =
         vnode.key == null
-          ? // same constructor may get registered as different local components
-            // so cid alone is not enough (#3269) => 相同的构造函数可能被注册为不同的本地组件，因此仅使用 cid 是不够的
+          ? // => 相同的构造函数可能被注册为不同的本地组件，因此仅使用 cid 是不够的
             componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
           : vnode.key;
       if (cache[key]) {
         vnode.componentInstance = cache[key].componentInstance;
-        // make current key freshest => 使当前键为最新
+        // => 使当前键为最新
         remove(keys, key);
         keys.push(key);
       } else {
         cache[key] = vnode;
         keys.push(key);
-        // prune oldest entry => 删除最老的条目（LRU 算法）
+        //=> 删除最老的条目（LRU 算法）
         if (this.max && keys.length > parseInt(this.max)) pruneCacheEntry(cache, keys[0], keys, this._vnode);
       }
 

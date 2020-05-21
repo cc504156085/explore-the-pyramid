@@ -1,9 +1,7 @@
-/* @flow */
-
-// can we use __proto__? => 我们能用 __proto__ 吗？（非标准属性，某些浏览器不支持）
+// => 我们能用 __proto__ 吗？（非标准属性，某些浏览器不支持）
 export const hasProto = '__proto__' in {};
 
-// Browser environment sniffing => 浏览器环境检测
+// => 浏览器环境检测
 export const inBrowser = typeof window !== 'undefined';
 export const inWeex = typeof WXEnvironment !== 'undefined' && !!WXEnvironment.platform;
 export const weexPlatform = inWeex && WXEnvironment.platform.toLowerCase();
@@ -17,36 +15,28 @@ export const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
 export const isPhantomJS = UA && /phantomjs/.test(UA);
 export const isFF = UA && UA.match(/firefox\/(\d+)/);
 
-// Firefox has a "watch" function on Object.prototype... => Firefox 在 Object.prototype 上有一个 watch 函数。。。
+// => Firefox 在 Object.prototype 上有一个 watch 函数。。。
 export const nativeWatch = {}.watch;
 
 export let supportsPassive = false;
 if (inBrowser) {
   try {
     const opts = {};
-    Object.defineProperty(
-      opts,
-      'passive',
-      ({
-        get() {
-          /* istanbul ignore next */
-          supportsPassive = true;
-        },
-      }: Object),
-    ); // https://github.com/facebook/flow/issues/285
+    Object.defineProperty(opts, 'passive', {
+      get() {
+        supportsPassive = true;
+      },
+    });
     window.addEventListener('test-passive', null, opts);
   } catch (e) {}
 }
 
-// this needs to be lazy-evaled because vue may be required before
-// vue-server-renderer can set VUE_ENV
+// => 这需要延迟评估，因为在 vue-server-renderer 设置 VUE_ENV 之前可能需要 vue
 let _isServer;
 export const isServerRendering = () => {
   if (_isServer === undefined) {
-    /* istanbul ignore if */
     if (!inBrowser && !inWeex && typeof global !== 'undefined') {
-      // detect presence of vue-server-renderer and avoid
-      // Webpack shimming the process
+      // => 检测 vue-server-renderer 的存在，避免 Webpack 对进程的影响
       _isServer = global['process'] && global['process'].env.VUE_ENV === 'server';
     } else {
       _isServer = false;
@@ -55,22 +45,20 @@ export const isServerRendering = () => {
   return _isServer;
 };
 
-// detect devtools
+// 检测 devtools
 export const devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
 
-/* istanbul ignore next */
 export function isNative(Ctor: any): boolean {
   return typeof Ctor === 'function' && /native code/.test(Ctor.toString());
 }
 
 export const hasSymbol = typeof Symbol !== 'undefined' && isNative(Symbol) && typeof Reflect !== 'undefined' && isNative(Reflect.ownKeys);
 
-let _Set; // $flow-disable-line
-/* istanbul ignore if */ if (typeof Set !== 'undefined' && isNative(Set)) {
-  // use native Set when available.
+let _Set;
+if (typeof Set !== 'undefined' && isNative(Set)) {
   _Set = Set;
 } else {
-  // a non-standard Set polyfill that only works with primitive keys.
+  // => 一个非标准的集合填充，只对基本键起作用
   _Set = class Set implements SimpleSet {
     set: Object;
     constructor() {

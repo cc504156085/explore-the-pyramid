@@ -1,19 +1,15 @@
-/* @flow */
-
 import { warn, remove, isObject, parsePath, _Set as Set, handleError, noop } from '../util/index';
-
 import { traverse } from './traverse';
 import { queueWatcher } from './scheduler';
 import Dep, { pushTarget, popTarget } from './dep';
-
 import type { SimpleSet } from '../util/index';
 
 let uid = 0;
 
 /**
- * A watcher parses an expression, collects dependencies, => 一个 Watcher 解析表达式，收集依赖项
- * and fires callback when the expression value changes.  => 并在表达式值更改时触发回调。
- * This is used for both the $watch() api and directives. => 这用于 $watch() api 和指令。
+ * => 一个 Watcher 解析表达式，收集依赖项
+ * => 并在表达式值更改时触发回调。
+ * => 这用于 $watch() api 和指令。
  */
 export default class Watcher {
   vm: Component;
@@ -39,14 +35,12 @@ export default class Watcher {
     this.vm = vm;
 
     /* => 如果是渲染 Watcher ，在实例上添加 _watcher 私有属性 */
-    if (isRenderWatcher) {
-      vm._watcher = this;
-    }
+    if (isRenderWatcher) vm._watcher = this;
 
     /* => 给每个实例创建一个 watchers 收集池，当前实例下，每创建一个 watcher ，就将自己存入（ $watch 方法） */
     vm._watchers.push(this);
 
-    // options => 选项，使用 $watch 时传入
+    // => 选项，使用 $watch 时传入
     if (options) {
       this.deep = !!options.deep; // => 深度监听
       this.user = !!options.user;
@@ -57,16 +51,16 @@ export default class Watcher {
       this.deep = this.user = this.lazy = this.sync = false;
     }
     this.cb = cb;
-    this.id = ++uid; // uid for batching => 用于批处理的 uid
+    this.id = ++uid; // => 用于批处理的 uid
     this.active = true;
-    this.dirty = this.lazy; // for lazy watchers => 对于懒惰的观察者
+    this.dirty = this.lazy; // => 对于懒惰的观察者
     this.deps = [];
     this.newDeps = [];
     this.depIds = new Set();
     this.newDepIds = new Set();
     this.expression = process.env.NODE_ENV !== 'production' ? expOrFn.toString() : '';
 
-    // parse expression for getter => getter 的解析表达式
+    // => getter 的解析表达式
     /* => 判断渲染 Watcher 传入的 updateComponent 是否是一个函数 */
     if (typeof expOrFn === 'function') {
       /* => 将 updateComponent 回调函数赋值给 getter 属性 => 用于 this.get() 处获取数据 */
@@ -91,9 +85,7 @@ export default class Watcher {
     this.value = this.lazy ? undefined : this.get();
   }
 
-  /** => 计算 getter ，然后重新收集依赖项。
-   * Evaluate the getter, and re-collect dependencies.
-   */
+  /* => 计算 getter ，然后重新收集依赖项 */
   get() {
     /* => 将当前 Watcher 挂载到全局（计算属性由此可以进行依赖收集） Dep.target = this */
     pushTarget(this);
@@ -111,12 +103,10 @@ export default class Watcher {
         throw e;
       }
     } finally {
-      // "touch" every property so they are all tracked as => 触摸 每一个属性，这样它们都被跟踪为
-      // dependencies for deep watching => 深度监视的依赖项
-      if (this.deep) {
-        /* => 递归循环该 value 里面的每一项，{ msg: { err: "s" } }，默认只观测 msg ，加上 deep 选项可观测到 err */
-        traverse(value);
-      }
+      // => 触摸每一个属性，这样它们都被跟踪为深度监视的依赖项
+      /* => 递归循环该 value 里面的每一项，{ msg: { err: "s" } }，默认只观测 msg ，加上 deep 选项可观测到 err */
+      if (this.deep) traverse(value);
+
       popTarget();
       this.cleanupDeps();
     }
@@ -125,9 +115,7 @@ export default class Watcher {
     return value;
   }
 
-  /** => 添加一个依赖项
-   * Add a dependency to this directive.
-   */
+  /* => 添加一个依赖项 */
   addDep(dep: Dep) {
     const id = dep.id;
 
@@ -139,22 +127,16 @@ export default class Watcher {
       this.newDeps.push(dep);
 
       /* => 如果订阅 id 列表中没有当前 id，则向 dep 添加自己 */
-      if (!this.depIds.has(id)) {
-        dep.addSub(this);
-      }
+      if (!this.depIds.has(id)) dep.addSub(this);
     }
   }
 
-  /** => 清理依赖项集合。
-   * Clean up for dependency collection.
-   */
+  /* => 清理依赖项集合 */
   cleanupDeps() {
     let i = this.deps.length;
     while (i--) {
       const dep = this.deps[i];
-      if (!this.newDepIds.has(dep.id)) {
-        dep.removeSub(this);
-      }
+      if (!this.newDepIds.has(dep.id)) dep.removeSub(this);
     }
     let tmp = this.depIds;
     this.depIds = this.newDepIds;
@@ -166,10 +148,7 @@ export default class Watcher {
     this.newDeps.length = 0;
   }
 
-  /** => 当依赖项更改时将调用订阅接口
-   * Subscriber interface.
-   * Will be called when a dependency changes.
-   */
+  /* => 当依赖项更改时将调用订阅接口 */
   update() {
     /* => 对于计算属性，不会立即更新，而是标识为 true 当用户取值时，再执行取值操作。且优先于 DOM 渲染，由此渲染时才可以拿到最新的计算属性值 */
     if (this.lazy) {
@@ -182,20 +161,14 @@ export default class Watcher {
     }
   }
 
-  /**
-   * Scheduler job interface. => 调度程序作业接口。
-   * Will be called by the scheduler. => 将由调度程序调用。
-   */
+  /* => 调度程序作业接口，将由调度程序调用 */
   run() {
     if (this.active) {
       const value = this.get();
 
       /* => 即使值相同，对象/数组上的深度观察程序和观察程序也应该启动，因为该值可能已发生变化。 */
-      // Deep watchers and watchers on Object/Arrays should fire even
-      // when the value is the same, because the value may
-      // have mutated.
       if (value !== this.value || isObject(value) || this.deep) {
-        // set new value => 设置新值
+        // => 设置新值
         const oldValue = this.value;
 
         this.value = value;
@@ -213,45 +186,29 @@ export default class Watcher {
     }
   }
 
-  /**
-   * Evaluate the value of the watcher. => 评估观察者的价值
-   * This only gets called for lazy watchers. => 这只适用于懒惰的观察者。
-   */
+  /* => 评估观察者的价值，这只适用于懒惰的观察者 */
   evaluate() {
     this.value = this.get();
     this.dirty = false;
   }
 
-  /**
-   * Depend on all deps collected by this watcher. => 取决于此监视程序收集的所有DEP。
-   */
+  /* => 取决于此监视程序收集的所有 Dep */
   depend() {
     let i = this.deps.length;
-    while (i--) {
-      this.deps[i].depend();
-    }
+    while (i--) this.deps[i].depend();
   }
 
-  /**
-   * Remove self from all dependencies' subscriber list. => 从所有依赖项的订阅列表中删除自己。
-   */
+  /* => 从所有依赖项的订阅列表中删除自己 */
   teardown() {
     if (this.active) {
       /* => 从 vm 的观察者列表中删除自己这是一个有点昂贵的操作，因此如果 vm 被销毁，我们将跳过它。 */
-      // remove self from vm's watcher list
-      // this is a somewhat expensive operation so we skip it
-      // if the vm is being destroyed.
-
       /* => 从观察者列表中移除自己 */
-      if (!this.vm._isBeingDestroyed) {
-        remove(this.vm._watchers, this);
-      }
+      if (!this.vm._isBeingDestroyed) remove(this.vm._watchers, this);
 
       let i = this.deps.length;
-      while (i--) {
-        /* => 从每个依赖列表中移除自己 */
-        this.deps[i].removeSub(this);
-      }
+      /* => 从每个依赖列表中移除自己 */
+
+      while (i--) this.deps[i].removeSub(this);
 
       this.active = false;
     }

@@ -1,12 +1,10 @@
-/* @flow */
-
 import config from '../config';
 import { noop } from 'shared/util';
 
 export let warn = noop;
 export let tip = noop;
-export let generateComponentTrace = (noop: any); // work around flow check => 绕过 flow 校验
-export let formatComponentName = (noop: any);
+export let generateComponentTrace = noop;
+export let formatComponentName = noop;
 
 if (process.env.NODE_ENV !== 'production') {
   const hasConsole = typeof console !== 'undefined';
@@ -24,15 +22,12 @@ if (process.env.NODE_ENV !== 'production') {
   };
 
   tip = (msg, vm) => {
-    if (hasConsole && !config.silent) {
-      console.warn(`[Vue tip]: ${msg}` + (vm ? generateComponentTrace(vm) : ''));
-    }
+    if (hasConsole && !config.silent) console.warn(`[Vue tip]: ${msg}` + (vm ? generateComponentTrace(vm) : ''));
   };
 
   formatComponentName = (vm, includeFile) => {
-    if (vm.$root === vm) {
-      return '<Root>';
-    }
+    if (vm.$root === vm) return '<Root>';
+
     const options = typeof vm === 'function' && vm.cid != null ? vm.options : vm._isVue ? vm.$options || vm.constructor.options : vm;
     let name = options.name || options._componentTag;
     const file = options.__file;

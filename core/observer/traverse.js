@@ -1,5 +1,3 @@
-/* @flow */
-
 import { _Set as Set, isObject } from '../util/index';
 import type { SimpleSet } from '../util/index';
 import VNode from '../vdom/vnode';
@@ -7,9 +5,8 @@ import VNode from '../vdom/vnode';
 const seenObjects = new Set();
 
 /**
- * Recursively traverse an object to evoke all converted => 递归遍历对象以调用所有转换的 getter
- * getters, so that every nested property inside the object
- * is collected as a "deep" dependency. => 以便对象中的每个嵌套属性都作为深层依赖项收集。
+ * => 递归遍历对象以调用所有转换的 getter
+ * => 以便对象中的每个嵌套属性都作为深层依赖项收集。
  */
 export function traverse(val: any) {
   _traverse(val, seenObjects);

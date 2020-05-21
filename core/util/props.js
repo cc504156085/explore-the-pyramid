@@ -1,5 +1,3 @@
-/* @flow */
-
 import { warn } from './debug';
 import { observe, toggleObserving, shouldObserve } from '../observer/index';
 import { hasOwn, isObject, toRawType, hyphenate, capitalize, isPlainObject } from 'shared/util';
@@ -110,10 +108,8 @@ function assertProp(prop: PropOptions, name: string, value: any, vm: ?Component,
   }
   const validator = prop.validator;
   if (validator) {
-    if (!validator(value)) {
-      /* => 无效的 prop :自定义验证器检查失败的 prop name */
-      warn(`Invalid prop: custom validator check failed for prop "${name}".`, vm);
-    }
+    /* => 无效的 prop :自定义验证器检查失败的 prop name */
+    if (!validator(value)) warn(`Invalid prop: custom validator check failed for prop "${name}".`, vm);
   }
 }
 
@@ -155,9 +151,8 @@ function isSameType(a, b) {
 function getTypeIndex(type, expectedTypes): number {
   if (!Array.isArray(expectedTypes)) return isSameType(expectedTypes, type) ? 0 : -1;
 
-  for (let i = 0, len = expectedTypes.length; i < len; i++) {
-    if (isSameType(expectedTypes[i], type)) return i;
-  }
+  for (let i = 0, len = expectedTypes.length; i < len; i++) if (isSameType(expectedTypes[i], type)) return i;
+
   return -1;
 }
 
