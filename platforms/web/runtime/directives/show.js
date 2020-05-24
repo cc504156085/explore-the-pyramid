@@ -1,5 +1,3 @@
-/* @flow */
-
 import { enter, leave } from '../modules/transition';
 
 // => 递归地搜索在组件根中定义的可能的转换

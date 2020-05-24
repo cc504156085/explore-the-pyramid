@@ -1,5 +1,3 @@
-/* @flow */
-
 import { makeMap, isBuiltInTag, cached, no } from 'shared/util';
 
 let isStaticKey;
@@ -18,24 +16,27 @@ export function optimize(root: ?ASTElement, options: CompilerOptions) {
   // => 没有 AST 结束即可
   if (!root) return;
 
+  // => 标记是否为静态属性
   isStaticKey = genStaticKeysCached(options.staticKeys || '');
+
+  // => 标记是否为平台保留标签
   isPlatformReservedTag = options.isReservedTag || no;
 
-  // => 第一步：标记所有静态节点
+  // => 第一步：标记所有非静态节点
   markStatic(root);
 
   // => 第二步：标记所有静态根节点
   markStaticRoots(root, false);
 }
 
-/* => 生成静态 key */
+/* => 生成静态 key （静态属性映射表） */
 function genStaticKeys(keys: string): Function {
   return makeMap('type,tag,attrsList,attrsMap,plain,parent,children,attrs,start,end,rawAttrsMap' + (keys ? ',' + keys : ''));
 }
 
-/* => 标记静态节点 */
+/* => 标记非静态节点 */
 function markStatic(node: ASTNode) {
-  // => 判断当前节点是否为静态节点，并在当前 AST 节点上挂载属性
+  // => 判断当前节点是否为静态节点，并在当前 AST 节点上挂载该属性
   node.static = isStatic(node);
 
   // => 元素节点
@@ -48,7 +49,7 @@ function markStatic(node: ASTNode) {
     if (!isPlatformReservedTag(node.tag) && node.tag !== 'slot' && node.attrsMap['inline-template'] == null) return;
 
     for (let i = 0, l = node.children.length; i < l; i++) {
-      // => 递归给当前节点的子节点打标机
+      // => 递归给当前节点的子节点打标记
       const child = node.children[i];
       markStatic(child);
 
@@ -69,6 +70,7 @@ function markStatic(node: ASTNode) {
 /* => 标记静态根节点 */
 function markStaticRoots(node: ASTNode, isInFor: boolean) {
   if (node.type === 1) {
+    // => 标记 static 的或者带有 v-once 指令的，同时处于 for 循环中的节点
     if (node.static || node.once) node.staticInFor = isInFor;
 
     // => 要使一个节点符合静态根的条件，它应该有不仅仅是静态文本的子节点。否则，提升的成本将超过收益，最好总是保持新鲜感。
@@ -97,6 +99,7 @@ function markStaticRoots(node: ASTNode, isInFor: boolean) {
   }
 }
 
+/* => 判断一个节点是否是 static 的 */
 function isStatic(node: ASTNode): boolean {
   // => 带变量的动态文本节点
   if (node.type === 2) return false;
@@ -104,15 +107,15 @@ function isStatic(node: ASTNode): boolean {
   // => 不带变量的纯文本节点
   if (node.type === 3) return true;
 
-  // => type == 1 元素节点
+  // => node.type === 1 元素节点
   return !!(
     node.pre || // => 使用了 v-pre
     (!node.hasBindings && // => 没有动态绑定（没有以 @ / : 开头的属性）
-    !node.if &&
-    !node.for && // => 没有 v-if v-for v-else
-    !isBuiltInTag(node.tag) && // => 不是内置标签（ slot / component ）
-    isPlatformReservedTag(node.tag) && // => 不是组件（判断标签名是否是 HTML 保留标签）
-    !isDirectChildOfTemplateFor(node) && // => 当前节点的父节点不能是带 v-for 指令的 template 标签
+      !node.if &&
+      !node.for && // => 没有 v-if v-for v-else
+      !isBuiltInTag(node.tag) && // => 不是内置标签（ slot / component ）
+      isPlatformReservedTag(node.tag) && // => 不是组件（判断标签名是否是 HTML 保留标签）
+      !isDirectChildOfTemplateFor(node) && // => 当前节点的父节点不能是带 v-for 指令的 template 标签
       // => 节点中不存在动态节点才会有的属性
       Object.keys(node).every(isStaticKey))
   );

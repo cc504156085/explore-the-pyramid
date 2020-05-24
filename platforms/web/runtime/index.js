@@ -1,5 +1,3 @@
-/* @flow */
-
 /*
  * 1.配置 __patch__ 方法
  * 2.定义原始的 $mount hook
@@ -33,7 +31,7 @@ extend(Vue.options.components, platformComponents);
 Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
 // public mount method => 公共 $mount 方法，挂载到 Vue 的原型
-Vue.prototype.$mount = function (el?: string | Element, hydrating?: boolean): Component {
+Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Component {
   /* => 如果 el 元素存在且处于浏览器运行时，则获取该元素的内容 */
   el = el && inBrowser ? query(el) : undefined;
 
@@ -64,8 +62,8 @@ if (inBrowser) {
       /* => 您正在开发模式下运行Vue。为生产部署时，请确保启用生产模式。查看更多提示。。。 */
       console[console.info ? 'info' : 'log'](
         `You are running Vue in development mode.\n` +
-          `Make sure to turn on production mode when deploying for production.\n` +
-          `See more tips at https://vuejs.org/guide/deployment.html`,
+        `Make sure to turn on production mode when deploying for production.\n` +
+        `See more tips at https://vuejs.org/guide/deployment.html`,
       );
     }
   }, 0);

@@ -1,11 +1,10 @@
-/* @flow */
-
 import { extend } from 'shared/util';
 import { detectErrors } from './error-detector';
 import { createCompileToFunctionFn } from './to-function';
 
 /* => 编译器创建的创造者 */
 export function createCompilerCreator(baseCompile: Function): Function {
+  /* => 根据传递的 baseOptions （不同平台的不同实现）创建相应的编译器 */
   return function createCompiler(baseOptions: CompilerOptions) {
     function compile(template: string, options?: CompilerOptions): CompiledResult {
       const tips = [];
@@ -27,6 +26,8 @@ export function createCompilerCreator(baseCompile: Function): Function {
             (tip ? tips : errors).push(data);
           };
         }
+
+        /* => 根据不同平台的实现，合并当前平台的 baseOptions ，将公共部分抽离 */
 
         // => 合并定制模块
         if (options.modules) finalOptions.modules = (baseOptions.modules || []).concat(options.modules);

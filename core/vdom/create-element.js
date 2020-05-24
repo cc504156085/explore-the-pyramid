@@ -51,10 +51,10 @@ export function _createElement(
   if (isDef(data) && isDef(data.__ob__)) {
     // => 避免使用已观测的数据对象作为 vnode 数据：JSON.stringify(data) 。应总是在每个渲染函数中创建新的 vnode 数据对象！
     process.env.NODE_ENV !== 'production' &&
-      warn(
-        `Avoid using observed data object as vnode data: ${JSON.stringify(data)}. Always create fresh vnode data objects in each render!`,
-        context,
-      );
+    warn(
+      `Avoid using observed data object as vnode data: ${ JSON.stringify(data) }. Always create fresh vnode data objects in each render!`,
+      context,
+    );
 
     // => 发出警告后使用空注释节点代替
     return createEmptyVNode();
@@ -93,12 +93,12 @@ export function _createElement(
       // => 平台内置的元素
       if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn)) {
         // => v-on 的 .native 修饰符仅对组件有效，但它用于 tag 。
-        warn(`The .native modifier for v-on is only valid on components but it was used on <${tag}>.`, context);
+        warn(`The .native modifier for v-on is only valid on components but it was used on <${ tag }>.`, context);
       }
 
       vnode = new VNode(config.parsePlatformTagName(tag), data, children, undefined, undefined, context);
     } else if ((!data || !data.pre) && isDef((Ctor = resolveAsset(context.$options, 'components', tag)))) {
-      // => 创建组件
+      // => 创建组件（包括异步组件，Ctor 就是 Assets 注册时传入的 definition ，类型是 Function ）
       vnode = createComponent(Ctor, data, context, children, tag);
     } else {
       // => 未知或未列出的带名称空间的元素在运行时进行检查，因为在父元素规范化子元素时可能会分配名称空间

@@ -23,12 +23,12 @@ export function resolveTransition(def?: string | Object): ?Object {
 
 const autoCssTransition: (name: string) => Object = cached((name) => {
   return {
-    enterClass: `${name}-enter`,
-    enterToClass: `${name}-enter-to`,
-    enterActiveClass: `${name}-enter-active`,
-    leaveClass: `${name}-leave`,
-    leaveToClass: `${name}-leave-to`,
-    leaveActiveClass: `${name}-leave-active`,
+    enterClass: `${ name }-enter`,
+    enterToClass: `${ name }-enter-to`,
+    enterActiveClass: `${ name }-enter-active`,
+    leaveClass: `${ name }-leave`,
+    leaveToClass: `${ name }-leave-to`,
+    leaveActiveClass: `${ name }-leave-active`,
   };
 });
 
@@ -53,17 +53,15 @@ if (hasTransition) {
   }
 }
 
-// binding to window is necessary to make hot reload work in IE in strict mode
+// => 要在严格模式下在 IE 中进行热重载，必须绑定到窗口
 const raf = inBrowser
   ? window.requestAnimationFrame
     ? window.requestAnimationFrame.bind(window)
     : setTimeout
-  : /* istanbul ignore next */ (fn) => fn();
+  : (fn) => fn();
 
 export function nextFrame(fn: Function) {
-  raf(() => {
-    raf(fn);
-  });
+  raf(() => raf(fn));
 }
 
 export function addTransitionClass(el: any, cls: string) {
@@ -75,9 +73,7 @@ export function addTransitionClass(el: any, cls: string) {
 }
 
 export function removeTransitionClass(el: any, cls: string) {
-  if (el._transitionClasses) {
-    remove(el._transitionClasses, cls);
-  }
+  if (el._transitionClasses) remove(el._transitionClasses, cls);
   removeClass(el, cls);
 }
 
@@ -92,15 +88,11 @@ export function whenTransitionEnds(el: Element, expectedType: ?string, cb: Funct
   };
   const onEnd = (e) => {
     if (e.target === el) {
-      if (++ended >= propCount) {
-        end();
-      }
+      if (++ended >= propCount) end();
     }
   };
   setTimeout(() => {
-    if (ended < propCount) {
-      end();
-    }
+    if (ended < propCount) end();
   }, timeout + 1);
   el.addEventListener(event, onEnd);
 }

@@ -1,5 +1,3 @@
-/* @flow */
-
 const range = 2;
 
 /* => 生成代码框架 */
@@ -14,7 +12,7 @@ export function generateCodeFrame(source: string, start: number = 0, end: number
       for (let j = i - range; j <= i + range || end > count; j++) {
         if (j < 0 || j >= lines.length) continue;
 
-        res.push(`${j + 1}${repeat(` `, 3 - String(j + 1).length)}|  ${lines[j]}`);
+        res.push(`${ j + 1 }${ repeat(` `, 3 - String(j + 1).length) }|  ${ lines[j] }`);
         const lineLength = lines[j].length;
 
         if (j === i) {
@@ -40,12 +38,15 @@ export function generateCodeFrame(source: string, start: number = 0, end: number
 
 function repeat(str, n) {
   let result = '';
+
   if (n > 0) {
     while (true) {
       if (n & 1) result += str;
+
       n >>>= 1;
 
       if (n <= 0) break;
+
       str += str;
     }
   }

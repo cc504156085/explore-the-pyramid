@@ -1,5 +1,3 @@
-/* @flow */
-
 const fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function(?:\s+[\w$]+)?\s*\(/;
 const fnInvokeRE = /\([^)]*?\);*$/;
 const simplePathRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[A-Za-z_$][\w$]*])*$/;
@@ -37,7 +35,7 @@ const keyNames: { [key: string]: string | Array<string> } = {
 // #4868: modifiers that prevent the execution of the listener
 // need to explicitly return null so that we can determine whether to remove
 // the listener for .once
-const genGuard = condition => `if(${condition})return null;`;
+const genGuard = condition => `if(${ condition })return null;`;
 
 const modifierCode: { [key: string]: string } = {
   stop: '$event.stopPropagation();',
@@ -59,14 +57,14 @@ export function genHandlers(events: ASTElementHandlers, isNative: boolean): stri
   for (const name in events) {
     const handlerCode = genHandler(events[name]);
     if (events[name] && events[name].dynamic) {
-      dynamicHandlers += `${name},${handlerCode},`;
+      dynamicHandlers += `${ name },${ handlerCode },`;
     } else {
-      staticHandlers += `"${name}":${handlerCode},`;
+      staticHandlers += `"${ name }":${ handlerCode },`;
     }
   }
-  staticHandlers = `{${staticHandlers.slice(0, -1)}}`;
+  staticHandlers = `{${ staticHandlers.slice(0, -1) }}`;
   if (dynamicHandlers) {
-    return prefix + `_d(${staticHandlers},[${dynamicHandlers.slice(0, -1)}])`;
+    return prefix + `_d(${ staticHandlers },[${ dynamicHandlers.slice(0, -1) }])`;
   } else {
     return prefix + staticHandlers;
   }
@@ -79,15 +77,15 @@ function genWeexHandler(params: Array<any>, handlerCode: string) {
   const exps = params.filter(exp => simplePathRE.test(exp) && exp !== '$event');
   const bindings = exps.map(exp => ({ '@binding': exp }));
   const args = exps.map((exp, i) => {
-    const key = `$_${i + 1}`;
+    const key = `$_${ i + 1 }`;
     innerHandlerCode = innerHandlerCode.replace(exp, key);
     return key;
   });
   args.push('$event');
   return (
     '{\n' +
-    `handler:function(${args.join(',')}){${innerHandlerCode}},\n` +
-    `params:${JSON.stringify(bindings)}\n` +
+    `handler:function(${ args.join(',') }){${ innerHandlerCode }},\n` +
+    `params:${ JSON.stringify(bindings) }\n` +
     '}'
   );
 }
@@ -98,7 +96,7 @@ function genHandler(handler: ASTElementHandler | Array<ASTElementHandler>): stri
   }
 
   if (Array.isArray(handler)) {
-    return `[${handler.map(handler => genHandler(handler)).join(',')}]`;
+    return `[${ handler.map(handler => genHandler(handler)).join(',') }]`;
   }
 
   const isMethodPath = simplePathRE.test(handler.value);
@@ -113,7 +111,7 @@ function genHandler(handler: ASTElementHandler | Array<ASTElementHandler>): stri
     if (__WEEX__ && handler.params) {
       return genWeexHandler(handler.params, handler.value);
     }
-    return `function($event){${isFunctionInvocation ? `return ${handler.value}` : handler.value}}`; // inline statement
+    return `function($event){${ isFunctionInvocation ? `return ${ handler.value }` : handler.value }}`; // inline statement
   } else {
     let code = '';
     let genModifierCode = '';
@@ -130,7 +128,7 @@ function genHandler(handler: ASTElementHandler | Array<ASTElementHandler>): stri
         genModifierCode += genGuard(
           ['ctrl', 'shift', 'alt', 'meta']
             .filter(keyModifier => !modifiers[keyModifier])
-            .map(keyModifier => `$event.${keyModifier}Key`)
+            .map(keyModifier => `$event.${ keyModifier }Key`)
             .join('||'),
         );
       } else {
@@ -145,17 +143,17 @@ function genHandler(handler: ASTElementHandler | Array<ASTElementHandler>): stri
       code += genModifierCode;
     }
     const handlerCode = isMethodPath
-      ? `return ${handler.value}($event)`
+      ? `return ${ handler.value }($event)`
       : isFunctionExpression
-      ? `return (${handler.value})($event)`
-      : isFunctionInvocation
-      ? `return ${handler.value}`
-      : handler.value;
+        ? `return (${ handler.value })($event)`
+        : isFunctionInvocation
+          ? `return ${ handler.value }`
+          : handler.value;
     /* istanbul ignore if */
     if (__WEEX__ && handler.params) {
       return genWeexHandler(handler.params, code + handlerCode);
     }
-    return `function($event){${code}${handlerCode}}`;
+    return `function($event){${ code }${ handlerCode }}`;
   }
 }
 
@@ -164,23 +162,23 @@ function genKeyFilter(keys: Array<string>): string {
     // make sure the key filters only apply to KeyboardEvents
     // #9441: can't use 'keyCode' in $event because Chrome autofill fires fake
     // key events that do not have keyCode property...
-    `if(!$event.type.indexOf('key')&&` + `${keys.map(genFilterCode).join('&&')})return null;`
+    `if(!$event.type.indexOf('key')&&` + `${ keys.map(genFilterCode).join('&&') })return null;`
   );
 }
 
 function genFilterCode(key: string): string {
   const keyVal = parseInt(key, 10);
   if (keyVal) {
-    return `$event.keyCode!==${keyVal}`;
+    return `$event.keyCode!==${ keyVal }`;
   }
   const keyCode = keyCodes[key];
   const keyName = keyNames[key];
   return (
     `_k($event.keyCode,` +
-    `${JSON.stringify(key)},` +
-    `${JSON.stringify(keyCode)},` +
+    `${ JSON.stringify(key) },` +
+    `${ JSON.stringify(keyCode) },` +
     `$event.key,` +
-    `${JSON.stringify(keyName)}` +
+    `${ JSON.stringify(keyName) }` +
     `)`
   );
 }

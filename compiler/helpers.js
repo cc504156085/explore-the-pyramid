@@ -1,23 +1,24 @@
-/* @flow */
-
 import { emptyObject } from 'shared/util';
 import { parseFilters } from './parser/filter-parser';
 
 type Range = { start?: number, end?: number };
 
+/* => Vue 编译器警告 */
 export function baseWarn(msg: string, range?: Range) {
-  console.error(`[Vue compiler]: ${msg}`);
+  console.error(`[Vue compiler]: ${ msg }`);
 }
 
 export function pluckModuleFunction<F: Function>(modules: ?Array<Object>, key: string): Array<F> {
   return modules ? modules.map((m) => m[key]).filter((_) => _) : [];
 }
 
+/* => 将属性放入 el 的 prop 集合中 */
 export function addProp(el: ASTElement, name: string, value: string, range?: Range, dynamic?: boolean) {
   (el.props || (el.props = [])).push(rangeSetItem({ name, value, dynamic }, range));
   el.plain = false;
 }
 
+/* => 将属性放入 el 的 attr 集合中 */
 export function addAttr(el: ASTElement, name: string, value: any, range?: Range, dynamic?: boolean) {
   const attrs = dynamic ? el.dynamicAttrs || (el.dynamicAttrs = []) : el.attrs || (el.attrs = []);
   attrs.push(rangeSetItem({ name, value, dynamic }, range));
@@ -30,6 +31,7 @@ export function addRawAttr(el: ASTElement, name: string, value: any, range?: Ran
   el.attrsList.push(rangeSetItem({ name, value }, range));
 }
 
+/* => 将属性放入 el 的 directive 集合中 */
 export function addDirective(
   el: ASTElement,
   name: string,
@@ -40,13 +42,20 @@ export function addDirective(
   modifiers: ?ASTModifiers,
   range?: Range,
 ) {
-  (el.directives || (el.directives = [])).push(rangeSetItem({ name, rawName, value, arg, isDynamicArg, modifiers }, range));
+  (el.directives || (el.directives = [])).push(rangeSetItem({
+    name,
+    rawName,
+    value,
+    arg,
+    isDynamicArg,
+    modifiers,
+  }, range));
   el.plain = false;
 }
 
 function prependModifierMarker(symbol: string, name: string, dynamic?: boolean): string {
   // => 将事件标记为已捕获
-  return dynamic ? `_p(${name},"${symbol}")` : symbol + name;
+  return dynamic ? `_p(${ name },"${ symbol }")` : symbol + name;
 }
 
 export function addHandler(
@@ -64,20 +73,20 @@ export function addHandler(
   // => 警告预防和被动修改
   if (process.env.NODE_ENV !== 'production' && warn && modifiers.prevent && modifiers.passive) {
     // => passive 和 prevent 不能同时使用。 passive 处理程序不能阻止默认事件。
-    warn("passive and prevent can't be used together. Passive handler can't prevent default event.", range);
+    warn('passive and prevent can\'t be used together. Passive handler can\'t prevent default event.', range);
   }
 
   // => 规范化右击/中击。因为他们实际上并没有触发，这在技术上是特定于浏览器的，但至少现在浏览器是唯一的目标事件有右/中点击。
   if (modifiers.right) {
     if (dynamic) {
-      name = `(${name})==='click'?'contextmenu':(${name})`;
+      name = `(${ name })==='click'?'contextmenu':(${ name })`;
     } else if (name === 'click') {
       name = 'contextmenu';
       delete modifiers.right;
     }
   } else if (modifiers.middle) {
     if (dynamic) {
-      name = `(${name})==='click'?'mouseup':(${name})`;
+      name = `(${ name })==='click'?'mouseup':(${ name })`;
     } else if (name === 'click') {
       name = 'mouseup';
     }

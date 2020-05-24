@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isDef } from 'shared/util';
 import { isAsyncPlaceholder } from './is-async-placeholder';
 

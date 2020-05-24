@@ -1,5 +1,3 @@
-/* @flow */
-
 import { escape } from 'web/server/util';
 import { SSR_ATTR } from 'shared/constants';
 import { RenderContext } from './render-context';
@@ -16,36 +14,28 @@ let warned = Object.create(null);
 const warnOnce = msg => {
   if (!warned[msg]) {
     warned[msg] = true;
-    // eslint-disable-next-line no-console
-    console.warn(`\n\u001b[31m${msg}\u001b[39m\n`);
+    console.warn(`\n\u001b[31m${ msg }\u001b[39m\n`);
   }
 };
 
 const onCompilationError = (err, vm) => {
   const trace = vm ? generateComponentTrace(vm) : '';
-  throw new Error(`\n\u001b[31m${err}${trace}\u001b[39m\n`);
+  throw new Error(`\n\u001b[31m${ err }${ trace }\u001b[39m\n`);
 };
 
 const normalizeRender = vm => {
   const { render, template, _scopeId } = vm.$options;
   if (isUndef(render)) {
     if (template) {
-      const compiled = ssrCompileToFunctions(
-        template,
-        {
-          scopeId: _scopeId,
-          warn: onCompilationError,
-        },
-        vm,
-      );
+      const compiled = ssrCompileToFunctions(template, { scopeId: _scopeId, warn: onCompilationError }, vm);
 
       vm.$options.render = compiled.render;
       vm.$options.staticRenderFns = compiled.staticRenderFns;
     } else {
       throw new Error(
-        `render function or template not defined in component: ${vm.$options.name ||
-          vm.$options._componentTag ||
-          'anonymous'}`,
+        `render function or template not defined in component: ${ vm.$options.name ||
+        vm.$options._componentTag ||
+        'anonymous' }`,
       );
     }
   }
@@ -59,13 +49,9 @@ function waitForServerPrefetch(vm, resolve, reject) {
       const promises = [];
       for (let i = 0, j = handlers.length; i < j; i++) {
         const result = handlers[i].call(vm, vm);
-        if (result && typeof result.then === 'function') {
-          promises.push(result);
-        }
+        if (result && typeof result.then === 'function') promises.push(result);
       }
-      Promise.all(promises)
-        .then(resolve)
-        .catch(reject);
+      Promise.all(promises).then(resolve).catch(reject);
       return;
     } catch (e) {
       reject(e);
@@ -86,7 +72,7 @@ function renderNode(node, isRoot, context) {
       // async component
       renderAsyncComponent(node, isRoot, context);
     } else {
-      context.write(`<!--${node.text}-->`, context.next);
+      context.write(`<!--${ node.text }-->`, context.next);
     }
   } else {
     context.write(node.raw ? node.text : escape(String(node.text)), context.next);
@@ -151,15 +137,15 @@ function renderComponent(node, isRoot, context) {
   } else {
     if (isDef(getKey) && isUndef(cache)) {
       warnOnce(
-        `[vue-server-renderer] Component ${Ctor.options.name ||
-          '(anonymous)'} implemented serverCacheKey, ` +
-          'but no cache was provided to the renderer.',
+        `[vue-server-renderer] Component ${ Ctor.options.name ||
+        '(anonymous)' } implemented serverCacheKey, ` +
+        'but no cache was provided to the renderer.',
       );
     }
     if (isDef(getKey) && isUndef(name)) {
       warnOnce(
         `[vue-server-renderer] Components that implement "serverCacheKey" ` +
-          `must also define a unique "name" option.`,
+        `must also define a unique "name" option.`,
       );
     }
     renderComponentInner(node, isRoot, context);
@@ -298,7 +284,7 @@ function renderElement(el, isRoot, context) {
   }
 
   const startTag = renderStartingTag(el, context);
-  const endTag = `</${el.tag}>`;
+  const endTag = `</${ el.tag }>`;
   if (context.isUnaryTag(el.tag)) {
     write(startTag, next);
   } else if (isUndef(el.children) || el.children.length === 0) {
@@ -338,7 +324,7 @@ function getVShowDirectiveInfo(node: VNode): ?VNodeDirective {
 }
 
 function renderStartingTag(node: VNode, context) {
-  let markup = `<${node.tag}`;
+  let markup = `<${ node.tag }`;
   const { directives, modules } = context;
 
   // construct synthetic data for module processing
@@ -385,14 +371,14 @@ function renderStartingTag(node: VNode, context) {
     activeInstance !== node.context &&
     isDef((scopeId = activeInstance.$options._scopeId))
   ) {
-    markup += ` ${(scopeId: any)}`;
+    markup += ` ${ (scopeId: any) }`;
   }
   if (isDef(node.fnScopeId)) {
-    markup += ` ${node.fnScopeId}`;
+    markup += ` ${ node.fnScopeId }`;
   } else {
     while (isDef(node)) {
       if (isDef((scopeId = node.context.$options._scopeId))) {
-        markup += ` ${scopeId}`;
+        markup += ` ${ scopeId }`;
       }
       node = node.parent;
     }

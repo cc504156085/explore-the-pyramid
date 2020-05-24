@@ -1,31 +1,30 @@
-/* @flow */
-
 import { inBrowser, isIE9, warn } from 'core/util/index';
 import { mergeVNodeHook } from 'core/vdom/helpers/index';
 import { activeInstance } from 'core/instance/lifecycle';
 
 import { once, isDef, isUndef, isObject, toNumber } from 'shared/util';
 
-import { nextFrame, resolveTransition, whenTransitionEnds, addTransitionClass, removeTransitionClass } from '../transition-util';
+import {
+  nextFrame,
+  resolveTransition,
+  whenTransitionEnds,
+  addTransitionClass,
+  removeTransitionClass,
+} from '../transition-util';
 
 export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
   const el: any = vnode.elm;
 
-  // call leave callback now
+  // 立即调用离开回调
   if (isDef(el._leaveCb)) {
     el._leaveCb.cancelled = true;
     el._leaveCb();
   }
 
   const data = resolveTransition(vnode.data.transition);
-  if (isUndef(data)) {
-    return;
-  }
+  if (isUndef(data)) return;
 
-  /* istanbul ignore if */
-  if (isDef(el._enterCb) || el.nodeType !== 1) {
-    return;
-  }
+  if (isDef(el._enterCb) || el.nodeType !== 1) return;
 
   const {
     css,
@@ -47,10 +46,9 @@ export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
     duration,
   } = data;
 
-  // activeInstance will always be the <transition> component managing this
-  // transition. One edge case to check is when the <transition> is placed
-  // as the root node of a child component. In that case we need to check
-  // <transition>'s parent for appear check.
+  // => activeInstance 将始终是管理此过渡的 <transition> 组件。
+  // => 一个要检查的边缘情况是，何时将 <transition> 放置为子组件的根节点。
+  // => 在这种情况下，我们需要检查 <transition> 的父项是否出现外观检查。
   let context = activeInstance;
   let transitionNode = activeInstance.$vnode;
   while (transitionNode && transitionNode.parent) {
@@ -60,9 +58,7 @@ export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
 
   const isAppear = !context._isMounted || !vnode.isRootInsert;
 
-  if (isAppear && !appear && appear !== '') {
-    return;
-  }
+  if (isAppear && !appear && appear !== '') return;
 
   const startClass = isAppear && appearClass ? appearClass : enterClass;
   const activeClass = isAppear && appearActiveClass ? appearActiveClass : enterActiveClass;
@@ -88,9 +84,8 @@ export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
       removeTransitionClass(el, activeClass);
     }
     if (cb.cancelled) {
-      if (expectsCSS) {
-        removeTransitionClass(el, startClass);
-      }
+      if (expectsCSS) removeTransitionClass(el, startClass);
+
       enterCancelledHook && enterCancelledHook(el);
     } else {
       afterEnterHook && afterEnterHook(el);
@@ -99,7 +94,7 @@ export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
   }));
 
   if (!vnode.data.show) {
-    // remove pending leave element on enter by injecting an insert hook
+    // => 通过注入插入钩来删除回车中待处理的请假元素
     mergeVNodeHook(vnode, 'insert', () => {
       const parent = el.parentNode;
       const pendingNode = parent && parent._pending && parent._pending[vnode.key];
@@ -110,7 +105,7 @@ export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
     });
   }
 
-  // start enter transition
+  // => 开始进入过渡
   beforeEnterHook && beforeEnterHook(el);
   if (expectsCSS) {
     addTransitionClass(el, startClass);
@@ -135,29 +130,22 @@ export function enter(vnode: VNodeWithData, toggleDisplay: ?() => void) {
     enterHook && enterHook(el, cb);
   }
 
-  if (!expectsCSS && !userWantsControl) {
-    cb();
-  }
+  if (!expectsCSS && !userWantsControl) cb();
 }
 
 export function leave(vnode: VNodeWithData, rm: Function) {
   const el: any = vnode.elm;
 
-  // call enter callback now
+  // 立即调用进入回调
   if (isDef(el._enterCb)) {
     el._enterCb.cancelled = true;
     el._enterCb();
   }
 
   const data = resolveTransition(vnode.data.transition);
-  if (isUndef(data) || el.nodeType !== 1) {
-    return rm();
-  }
+  if (isUndef(data) || el.nodeType !== 1) return rm();
 
-  /* istanbul ignore if */
-  if (isDef(el._leaveCb)) {
-    return;
-  }
+  if (isDef(el._leaveCb)) return;
 
   const {
     css,
@@ -183,17 +171,14 @@ export function leave(vnode: VNodeWithData, rm: Function) {
   }
 
   const cb = (el._leaveCb = once(() => {
-    if (el.parentNode && el.parentNode._pending) {
-      el.parentNode._pending[vnode.key] = null;
-    }
+    if (el.parentNode && el.parentNode._pending) el.parentNode._pending[vnode.key] = null;
+
     if (expectsCSS) {
       removeTransitionClass(el, leaveToClass);
       removeTransitionClass(el, leaveActiveClass);
     }
     if (cb.cancelled) {
-      if (expectsCSS) {
-        removeTransitionClass(el, leaveClass);
-      }
+      if (expectsCSS) removeTransitionClass(el, leaveClass);
       leaveCancelled && leaveCancelled(el);
     } else {
       rm();
@@ -209,11 +194,10 @@ export function leave(vnode: VNodeWithData, rm: Function) {
   }
 
   function performLeave() {
-    // the delayed leave may have already been cancelled
-    if (cb.cancelled) {
-      return;
-    }
-    // record leaving element
+    // => 延迟的离开可能已经被取消
+    if (cb.cancelled) return;
+
+    // => 记录离开元素
     if (!vnode.data.show && el.parentNode) {
       (el.parentNode._pending || (el.parentNode._pending = {}))[(vnode.key: any)] = vnode;
     }
@@ -236,18 +220,16 @@ export function leave(vnode: VNodeWithData, rm: Function) {
       });
     }
     leave && leave(el, cb);
-    if (!expectsCSS && !userWantsControl) {
-      cb();
-    }
+    if (!expectsCSS && !userWantsControl) cb();
   }
 }
 
-// only used in dev mode
+// => 仅在开发模式下使用
 function checkDuration(val, name, vnode) {
   if (typeof val !== 'number') {
-    warn(`<transition> explicit ${name} duration is not a valid number - ` + `got ${JSON.stringify(val)}.`, vnode.context);
+    warn(`<transition> explicit ${ name } duration is not a valid number - ` + `got ${ JSON.stringify(val) }.`, vnode.context);
   } else if (isNaN(val)) {
-    warn(`<transition> explicit ${name} duration is NaN - ` + 'the duration expression might be incorrect.', vnode.context);
+    warn(`<transition> explicit ${ name } duration is NaN - ` + 'the duration expression might be incorrect.', vnode.context);
   }
 }
 
@@ -262,12 +244,11 @@ function isValidDuration(val) {
  * - a plain function (.length)
  */
 function getHookArgumentsLength(fn: Function): boolean {
-  if (isUndef(fn)) {
-    return false;
-  }
+  if (isUndef(fn)) return false;
+
   const invokerFns = fn.fns;
   if (isDef(invokerFns)) {
-    // invoker
+    // 调用者
     return getHookArgumentsLength(Array.isArray(invokerFns) ? invokerFns[0] : invokerFns);
   } else {
     return (fn._length || fn.length) > 1;
@@ -275,22 +256,19 @@ function getHookArgumentsLength(fn: Function): boolean {
 }
 
 function _enter(_: any, vnode: VNodeWithData) {
-  if (vnode.data.show !== true) {
-    enter(vnode);
-  }
+  if (vnode.data.show !== true) enter(vnode);
 }
 
 export default inBrowser
   ? {
-      create: _enter,
-      activate: _enter,
-      remove(vnode: VNode, rm: Function) {
-        /* istanbul ignore else */
-        if (vnode.data.show !== true) {
-          leave(vnode, rm);
-        } else {
-          rm();
-        }
-      },
-    }
+    create: _enter,
+    activate: _enter,
+    remove(vnode: VNode, rm: Function) {
+      if (vnode.data.show !== true) {
+        leave(vnode, rm);
+      } else {
+        rm();
+      }
+    },
+  }
   : {};

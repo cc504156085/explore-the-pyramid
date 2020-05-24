@@ -1,5 +1,3 @@
-/* @flow */
-
 import { genHandlers } from './events';
 import baseDirectives from '../directives/index';
 import { camelize, no, extend } from 'shared/util';
@@ -46,7 +44,7 @@ export function generate(ast: ASTElement | void, options: CompilerOptions): Code
 
   // => 返回代码字符串
   return {
-    render: `with(this){return ${code}}`,
+    render: `with(this){return ${ code }}`,
     staticRenderFns: state.staticRenderFns,
   };
 }
@@ -78,7 +76,7 @@ export function genElement(el: ASTElement, state: CodegenState): string {
 
       const children = el.inlineTemplate ? null : genChildren(el, state, true);
 
-      code = `_c('${el.tag}'${data ? `,${data}` : ''}${children ? `,${children}` : ''})`;
+      code = `_c('${ el.tag }'${ data ? `,${ data }` : '' }${ children ? `,${ children }` : '' })`;
     }
 
     // => 模块转换
@@ -96,15 +94,12 @@ function genStatic(el: ASTElement, state: CodegenState): string {
   /** => 一些元素(模板)需要在 v-pre 节点中以不同的方式运行。
    *  所有 pre 节点都是静态根，因此我们可以使用这个位置来包装状态更改，并在退出 pre 节点时重置它。
    */
-  // Some elements (templates) need to behave differently inside of a v-pre
-  // node.  All pre nodes are static roots, so we can use this as a location to
-  // wrap a state change and reset it upon exiting the pre node.
   const originalPreState = state.pre;
   if (el.pre) state.pre = el.pre;
 
-  state.staticRenderFns.push(`with(this){return ${genElement(el, state)}}`);
+  state.staticRenderFns.push(`with(this){return ${ genElement(el, state) }}`);
   state.pre = originalPreState;
-  return `_m(${state.staticRenderFns.length - 1}${el.staticInFor ? ',true' : ''})`;
+  return `_m(${ state.staticRenderFns.length - 1 }${ el.staticInFor ? ',true' : '' })`;
 }
 
 // v-once
@@ -126,14 +121,14 @@ function genOnce(el: ASTElement, state: CodegenState): string {
       process.env.NODE_ENV !== 'production' && state.warn(`v-once can only be used inside v-for that is keyed. `, el.rawAttrsMap['v-once']);
       return genElement(el, state);
     }
-    return `_o(${genElement(el, state)},${state.onceId++},${key})`;
+    return `_o(${ genElement(el, state) },${ state.onceId++ },${ key })`;
   } else {
     return genStatic(el, state);
   }
 }
 
 export function genIf(el: any, state: CodegenState, altGen?: Function, altEmpty?: string): string {
-  // avoid recursion => 避免递归
+  // => 避免递归
   el.ifProcessed = true;
 
   return genIfConditions(el.ifConditions.slice(), state, altGen, altEmpty);
@@ -146,12 +141,12 @@ function genIfConditions(conditions: ASTIfConditions, state: CodegenState, altGe
 
   const condition = conditions.shift();
   if (condition.exp) {
-    return `(${condition.exp})?${genTernaryExp(condition.block)}:${genIfConditions(conditions, state, altGen, altEmpty)}`;
+    return `(${ condition.exp })?${ genTernaryExp(condition.block) }:${ genIfConditions(conditions, state, altGen, altEmpty) }`;
   } else {
-    return `${genTernaryExp(condition.block)}`;
+    return `${ genTernaryExp(condition.block) }`;
   }
 
-  // v-if with v-once should generate code like (a)?_m(0):_m(1) => 使用 v-if / v-once 应该生成像 (a) ? _m(0) : _m(1) 这样的代码
+  // => 使用 v-if / v-once 应该生成像 (a) ? _m(0) : _m(1) 这样的代码
   function genTernaryExp(el) {
     return altGen ? altGen(el, state) : el.once ? genOnce(el, state) : genElement(el, state);
   }
@@ -160,14 +155,14 @@ function genIfConditions(conditions: ASTIfConditions, state: CodegenState, altGe
 export function genFor(el: any, state: CodegenState, altGen?: Function, altHelper?: string): string {
   const exp = el.for;
   const alias = el.alias;
-  const iterator1 = el.iterator1 ? `,${el.iterator1}` : '';
-  const iterator2 = el.iterator2 ? `,${el.iterator2}` : '';
+  const iterator1 = el.iterator1 ? `,${ el.iterator1 }` : '';
+  const iterator2 = el.iterator2 ? `,${ el.iterator2 }` : '';
 
   if (process.env.NODE_ENV !== 'production' && state.maybeComponent(el) && el.tag !== 'slot' && el.tag !== 'template' && !el.key) {
     state.warn(
-      `<${el.tag} v-for="${alias} in ${exp}">: component lists rendered with ` +
-        `v-for should have explicit keys. ` +
-        `See https://vuejs.org/guide/list.html#key for more info.`,
+      `<${ el.tag } v-for="${ alias } in ${ exp }">: component lists rendered with ` +
+      `v-for should have explicit keys. ` +
+      `See https://vuejs.org/guide/list.html#key for more info.`,
       el.rawAttrsMap['v-for'],
       true /* tip */,
     );
@@ -175,7 +170,7 @@ export function genFor(el: any, state: CodegenState, altGen?: Function, altHelpe
 
   el.forProcessed = true; // avoid recursion
   return (
-    `${altHelper || '_l'}((${exp}),` + `function(${alias}${iterator1}${iterator2}){` + `return ${(altGen || genElement)(el, state)}` + '})'
+    `${ altHelper || '_l' }((${ exp }),` + `function(${ alias }${ iterator1 }${ iterator2 }){` + `return ${ (altGen || genElement)(el, state) }` + '})'
   );
 }
 
@@ -189,11 +184,11 @@ export function genData(el: ASTElement, state: CodegenState): string {
 
   // key
   if (el.key) {
-    data += `key:${el.key},`;
+    data += `key:${ el.key },`;
   }
   // ref
   if (el.ref) {
-    data += `ref:${el.ref},`;
+    data += `ref:${ el.ref },`;
   }
   if (el.refInFor) {
     data += `refInFor:true,`;
@@ -204,7 +199,7 @@ export function genData(el: ASTElement, state: CodegenState): string {
   }
   // record original tag name for components using "is" attribute
   if (el.component) {
-    data += `tag:"${el.tag}",`;
+    data += `tag:"${ el.tag }",`;
   }
   // module data generation functions
   for (let i = 0; i < state.dataGenFns.length; i++) {
@@ -212,37 +207,37 @@ export function genData(el: ASTElement, state: CodegenState): string {
   }
   // attributes
   if (el.attrs) {
-    data += `attrs:${genProps(el.attrs)},`;
+    data += `attrs:${ genProps(el.attrs) },`;
   }
   // DOM props
   if (el.props) {
-    data += `domProps:${genProps(el.props)},`;
+    data += `domProps:${ genProps(el.props) },`;
   }
   // event handlers
   if (el.events) {
-    data += `${genHandlers(el.events, false)},`;
+    data += `${ genHandlers(el.events, false) },`;
   }
   if (el.nativeEvents) {
-    data += `${genHandlers(el.nativeEvents, true)},`;
+    data += `${ genHandlers(el.nativeEvents, true) },`;
   }
   // slot target
   // only for non-scoped slots
   if (el.slotTarget && !el.slotScope) {
-    data += `slot:${el.slotTarget},`;
+    data += `slot:${ el.slotTarget },`;
   }
   // scoped slots
   if (el.scopedSlots) {
-    data += `${genScopedSlots(el, el.scopedSlots, state)},`;
+    data += `${ genScopedSlots(el, el.scopedSlots, state) },`;
   }
   // component v-model
   if (el.model) {
-    data += `model:{value:${el.model.value},callback:${el.model.callback},expression:${el.model.expression}},`;
+    data += `model:{value:${ el.model.value },callback:${ el.model.callback },expression:${ el.model.expression }},`;
   }
   // inline-template
   if (el.inlineTemplate) {
     const inlineTemplate = genInlineTemplate(el, state);
     if (inlineTemplate) {
-      data += `${inlineTemplate},`;
+      data += `${ inlineTemplate },`;
     }
   }
   data = data.replace(/,$/, '') + '}';
@@ -250,7 +245,7 @@ export function genData(el: ASTElement, state: CodegenState): string {
   // v-bind with dynamic arguments must be applied using the same v-bind object
   // merge helper so that class/style/mustUseProp attrs are handled correctly.
   if (el.dynamicAttrs) {
-    data = `_b(${data},"${el.tag}",${genProps(el.dynamicAttrs)})`;
+    data = `_b(${ data },"${ el.tag }",${ genProps(el.dynamicAttrs) })`;
   }
   // v-bind data wrap
   if (el.wrapData) {
@@ -280,11 +275,11 @@ function genDirectives(el: ASTElement, state: CodegenState): string | void {
     }
     if (needRuntime) {
       hasRuntime = true;
-      res += `{name:"${dir.name}",rawName:"${dir.rawName}"${
-        dir.value ? `,value:(${dir.value}),expression:${JSON.stringify(dir.value)}` : ''
-      }${dir.arg ? `,arg:${dir.isDynamicArg ? dir.arg : `"${dir.arg}"`}` : ''}${
-        dir.modifiers ? `,modifiers:${JSON.stringify(dir.modifiers)}` : ''
-      }},`;
+      res += `{name:"${ dir.name }",rawName:"${ dir.rawName }"${
+        dir.value ? `,value:(${ dir.value }),expression:${ JSON.stringify(dir.value) }` : ''
+        }${ dir.arg ? `,arg:${ dir.isDynamicArg ? dir.arg : `"${ dir.arg }"` }` : '' }${
+        dir.modifiers ? `,modifiers:${ JSON.stringify(dir.modifiers) }` : ''
+        }},`;
     }
   }
   if (hasRuntime) {
@@ -301,9 +296,9 @@ function genInlineTemplate(el: ASTElement, state: CodegenState): ?string {
   }
   if (ast && ast.type === 1) {
     const inlineRenderFns = generate(ast, state.options);
-    return `inlineTemplate:{render:function(){${inlineRenderFns.render}},staticRenderFns:[${inlineRenderFns.staticRenderFns
-      .map((code) => `function(){${code}}`)
-      .join(',')}]}`;
+    return `inlineTemplate:{render:function(){${ inlineRenderFns.render }},staticRenderFns:[${ inlineRenderFns.staticRenderFns
+      .map((code) => `function(){${ code }}`)
+      .join(',') }]}`;
   }
 }
 
@@ -350,9 +345,9 @@ function genScopedSlots(el: ASTElement, slots: { [key: string]: ASTElement }, st
     .map((key) => genScopedSlot(slots[key], state))
     .join(',');
 
-  return `scopedSlots:_u([${generatedSlots}]${needsForceUpdate ? `,null,true` : ``}${
-    !needsForceUpdate && needsKey ? `,null,false,${hash(generatedSlots)}` : ``
-  })`;
+  return `scopedSlots:_u([${ generatedSlots }]${ needsForceUpdate ? `,null,true` : `` }${
+    !needsForceUpdate && needsKey ? `,null,false,${ hash(generatedSlots) }` : ``
+    })`;
 }
 
 function hash(str) {
@@ -384,17 +379,17 @@ function genScopedSlot(el: ASTElement, state: CodegenState): string {
   }
   const slotScope = el.slotScope === emptySlotScopeToken ? `` : String(el.slotScope);
   const fn =
-    `function(${slotScope}){` +
+    `function(${ slotScope }){` +
     `return ${
       el.tag === 'template'
         ? el.if && isLegacySyntax
-          ? `(${el.if})?${genChildren(el, state) || 'undefined'}:undefined`
-          : genChildren(el, state) || 'undefined'
+        ? `(${ el.if })?${ genChildren(el, state) || 'undefined' }:undefined`
+        : genChildren(el, state) || 'undefined'
         : genElement(el, state)
-    }}`;
+      }}`;
   // reverse proxy v-slot without scope on this.$slots
   const reverseProxy = slotScope ? `` : `,proxy:true`;
-  return `{key:${el.slotTarget || `"default"`},fn:${fn}${reverseProxy}}`;
+  return `{key:${ el.slotTarget || `"default"` },fn:${ fn }${ reverseProxy }}`;
 }
 
 export function genChildren(
@@ -411,12 +406,12 @@ export function genChildren(
     // => 优化单个 v-for
     if (children.length === 1 && el.for && el.tag !== 'template' && el.tag !== 'slot') {
       const normalizationType = checkSkip ? (state.maybeComponent(el) ? `,1` : `,0`) : ``;
-      return `${(altGenElement || genElement)(el, state)}${normalizationType}`;
+      return `${ (altGenElement || genElement)(el, state) }${ normalizationType }`;
     }
 
     const normalizationType = checkSkip ? getNormalizationType(children, state.maybeComponent) : 0;
     const gen = altGenNode || genNode;
-    return `[${children.map((c) => gen(c, state)).join(',')}]${normalizationType ? `,${normalizationType}` : ''}`;
+    return `[${ children.map((c) => gen(c, state)).join(',') }]${ normalizationType ? `,${ normalizationType }` : '' }`;
   }
 }
 
@@ -463,37 +458,37 @@ export function genText(text: ASTText | ASTExpression): string {
     text.type === 2
       ? text.expression // no need for () because already wrapped in _s()
       : transformSpecialNewlines(JSON.stringify(text.text))
-  })`;
+    })`;
 }
 
 export function genComment(comment: ASTText): string {
-  return `_e(${JSON.stringify(comment.text)})`;
+  return `_e(${ JSON.stringify(comment.text) })`;
 }
 
 function genSlot(el: ASTElement, state: CodegenState): string {
   const slotName = el.slotName || '"default"';
   const children = genChildren(el, state);
-  let res = `_t(${slotName}${children ? `,${children}` : ''}`;
+  let res = `_t(${ slotName }${ children ? `,${ children }` : '' }`;
   const attrs =
     el.attrs || el.dynamicAttrs
       ? genProps(
-          (el.attrs || []).concat(el.dynamicAttrs || []).map((attr) => ({
-            // slot props are camelized
-            name: camelize(attr.name),
-            value: attr.value,
-            dynamic: attr.dynamic,
-          })),
-        )
+      (el.attrs || []).concat(el.dynamicAttrs || []).map((attr) => ({
+        // slot props are camelized
+        name: camelize(attr.name),
+        value: attr.value,
+        dynamic: attr.dynamic,
+      })),
+      )
       : null;
   const bind = el.attrsMap['v-bind'];
   if ((attrs || bind) && !children) {
     res += `,null`;
   }
   if (attrs) {
-    res += `,${attrs}`;
+    res += `,${ attrs }`;
   }
   if (bind) {
-    res += `${attrs ? '' : ',null'},${bind}`;
+    res += `${ attrs ? '' : ',null' },${ bind }`;
   }
   return res + ')';
 }
@@ -501,7 +496,7 @@ function genSlot(el: ASTElement, state: CodegenState): string {
 /* => componentName 是 el.component ，将它作为参数以避免 flow 的悲观细化 */
 function genComponent(componentName: string, el: ASTElement, state: CodegenState): string {
   const children = el.inlineTemplate ? null : genChildren(el, state, true);
-  return `_c(${componentName},${genData(el, state)}${children ? `,${children}` : ''})`;
+  return `_c(${ componentName },${ genData(el, state) }${ children ? `,${ children }` : '' })`;
 }
 
 function genProps(props: Array<ASTAttr>): string {
@@ -511,14 +506,14 @@ function genProps(props: Array<ASTAttr>): string {
     const prop = props[i];
     const value = __WEEX__ ? generateValue(prop.value) : transformSpecialNewlines(prop.value);
     if (prop.dynamic) {
-      dynamicProps += `${prop.name},${value},`;
+      dynamicProps += `${ prop.name },${ value },`;
     } else {
-      staticProps += `"${prop.name}":${value},`;
+      staticProps += `"${ prop.name }":${ value },`;
     }
   }
-  staticProps = `{${staticProps.slice(0, -1)}}`;
+  staticProps = `{${ staticProps.slice(0, -1) }}`;
   if (dynamicProps) {
-    return `_d(${staticProps},[${dynamicProps.slice(0, -1)}])`;
+    return `_d(${ staticProps },[${ dynamicProps.slice(0, -1) }])`;
   } else {
     return staticProps;
   }

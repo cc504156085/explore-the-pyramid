@@ -1,5 +1,3 @@
-/* @flow */
-
 import VNode from './vnode';
 import { resolveConstructorOptions } from 'core/instance/init';
 import { queueActivatedComponent } from 'core/observer/scheduler';
@@ -9,9 +7,18 @@ import { warn, isDef, isUndef, isTrue, isObject } from '../util/index';
 
 import { resolveAsyncComponent, createAsyncPlaceholder, extractPropsFromVNodeData } from './helpers/index';
 
-import { callHook, activeInstance, updateChildComponent, activateChildComponent, deactivateChildComponent } from '../instance/lifecycle';
+import {
+  callHook,
+  activeInstance,
+  updateChildComponent,
+  activateChildComponent,
+  deactivateChildComponent,
+} from '../instance/lifecycle';
 
-import { isRecyclableComponent, renderRecyclableComponentTemplate } from 'weex/runtime/recycle-list/render-component-template';
+import {
+  isRecyclableComponent,
+  renderRecyclableComponentTemplate,
+} from 'weex/runtime/recycle-list/render-component-template';
 
 /* => 在修补期间在组件 vnode 上调用的内联钩子 */
 const componentVNodeHooks = {
@@ -90,19 +97,26 @@ export function createComponent(
   // => 如果在此阶段它不是构造函数或异步组件工厂，则拒绝。
   if (typeof Ctor !== 'function') {
     // => 无效的组件定义： Ctor
-    if (process.env.NODE_ENV !== 'production') warn(`Invalid Component definition: ${String(Ctor)}`, context);
+    if (process.env.NODE_ENV !== 'production') warn(`Invalid Component definition: ${ String(Ctor) }`, context);
 
     return;
   }
 
-  // => 异步组件
+  // => 异步组件工厂模式（Ctor 是函数）
+  /**
+   * 异步组件实现的本质是 2 次（以上且包含）渲染，先渲染注释节点占位，当异步组件加载成功后，再通过 $forceUpdate 强制渲染更新
+   * 如果是高阶异步组件，配置了 loading 组件，就会发生 3 次渲染（注释节点 -> loading（延时，且异步组件加载未决议） -> asyncComponent）
+   * */
   let asyncFactory;
+
+  // => 没有调用 Vue.extend 进行组件构造函数转换就没有 cid
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor;
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor);
+    // => 同步解析完成，返回 undefined ，创建一个注释节点占位，当强制渲染更新后，返回了异步的组件替换占位节点，之后的处理跟平常组件一样
     if (Ctor === undefined) {
       /**
-       * 返回一个异步组件的占位符节点，它作为一个注释节点呈现，但保留了该节点的所有原始信息。
+       * 返回一个异步组件的占位符节点，它作为一个注释节点渲染，但保留了该节点的所有原始信息。
        * 这些信息将用于异步服务器渲染和混合。
        */
       return createAsyncPlaceholder(asyncFactory, data, context, children, tag);
@@ -142,7 +156,7 @@ export function createComponent(
   // => 返回一个占位符虚拟节点
   const name = Ctor.options.name || tag;
   const vnode = new VNode(
-    `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
+    `vue-component-${ Ctor.cid }${ name ? `-${ name }` : '' }`,
     data,
     undefined,
     undefined,

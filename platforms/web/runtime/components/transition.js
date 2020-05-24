@@ -1,7 +1,4 @@
-/* @flow */
-
 // => 为单个元素/组件提供转换支持。支持转换模式( out-in / in-out )
-
 import { warn } from 'core/util/index';
 import { camelize, extend, isPrimitive } from 'shared/util';
 import { mergeVNodeHook, isAsyncPlaceholder, getFirstComponentChild } from 'core/vdom/helpers/index';
@@ -24,7 +21,7 @@ export const transitionProps = {
   duration: [Number, String, Object],
 };
 
-// => 以防子组件也是一个抽象组件，例如：keep-alive，我们希望递归检索要呈现的实际组件
+// => 以防子组件也是一个抽象组件，例如：keep-alive，我们希望递归检索要渲染的实际组件
 function getRealChild(vnode: ?VNode): ?VNode {
   const compOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions;
   if (compOptions && compOptions.Ctor.options.abstract) {
@@ -37,23 +34,18 @@ function getRealChild(vnode: ?VNode): ?VNode {
 export function extractTransitionData(comp: Component): Object {
   const data = {};
   const options: ComponentOptions = comp.$options;
-  // props
-  for (const key in options.propsData) {
-    data[key] = comp[key];
-  }
-  // events.
+  for (const key in options.propsData) data[key] = comp[key];
+
   // => 提取侦听器并将它们直接传递给转换方法
   const listeners: ?Object = options._parentListeners;
-  for (const key in listeners) {
-    data[camelize(key)] = listeners[key];
-  }
+  for (const key in listeners) data[camelize(key)] = listeners[key];
+
   return data;
 }
 
 function placeholder(h: Function, rawChild: VNode): ?VNode {
-  if (/\d-keep-alive$/.test(rawChild.tag)) {
-    return h('keep-alive', { props: rawChild.componentOptions.propsData });
-  }
+  if (/\d-keep-alive$/.test(rawChild.tag)) return h('keep-alive', { props: rawChild.componentOptions.propsData });
+
 }
 
 function hasParentTransition(vnode: VNode): ?boolean {
@@ -81,16 +73,16 @@ export default {
     children = children.filter(isNotTextNode);
     if (!children.length) return;
 
-    // => 警告多个元素， <transition> 只能用于单个元素。使用 <transition-group> 为列表。
+    // => <transition> 只能在单个元素上使用，将 <transition-group> 用于列表
     if (process.env.NODE_ENV !== 'production' && children.length > 1) {
       warn('<transition> can only be used on a single element. Use <transition-group> for lists.', this.$parent);
     }
 
     const mode: string = this.mode;
 
-    // => 警告无效的模式，无效的 <transition> 模式:
+    // => 无效的 <transition> 模式:
     if (process.env.NODE_ENV !== 'production' && mode && mode !== 'in-out' && mode !== 'out-in') {
-      warn('invalid <transition> mode: ' + mode, this.$parent);
+      warn(`invalid <transition> mode: ${ mode }`, this.$parent);
     }
 
     const rawChild: VNode = children[0];
@@ -106,12 +98,12 @@ export default {
     if (this._leaving) return placeholder(h, rawChild);
 
     // => 确保键对于 vnode 类型和这个转换组件实例是唯一的。此键将用于在进入期间删除挂起的离开节点。
-    const id: string = `__transition-${this._uid}-`;
+    const id: string = `__transition-${ this._uid }-`;
     child.key =
       child.key == null
         ? child.isComment
-          ? id + 'comment'
-          : id + child.tag
+        ? id + 'comment'
+        : id + child.tag
         : isPrimitive(child.key)
         ? String(child.key).indexOf(id) === 0
           ? child.key
@@ -135,6 +127,7 @@ export default {
     ) {
       // => 用新的重要的动态转换数据替换旧的子转换数据!
       const oldData: Object = (oldChild.data.transition = extend({}, data));
+
       // => 处理过渡模式
       if (mode === 'out-in') {
         // => 离开结束时返回占位符节点和队列更新

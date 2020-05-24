@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isDef, isUndef } from 'shared/util';
 import { updateListeners } from 'core/vdom/helpers/index';
 import { isIE, isFF, supportsPassive, isUsingMicroTask } from 'core/util/index';
@@ -54,7 +52,7 @@ function add(name: string, handler: Function, capture: boolean, passive: boolean
     const original = handler;
 
     // => 为回调函数做包装：当事件触发时，若回调中修改了数据而触发更新 DOM 操作，那么该更新操作将会被推送到微任务队列中
-    handler = original._wrapper = function (e) {
+    handler = original._wrapper = function(e) {
       /**
        * 1.不要冒泡，要随时开火。这只是以防万一的安全网。在某些奇怪的环境中，时间戳是不可靠的 ……
        * 2.事件在处理程序连接后触发

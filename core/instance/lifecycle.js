@@ -1,5 +1,3 @@
-/* @flow */
-
 import config from '../config';
 import Watcher from '../observer/watcher';
 import { mark, measure } from '../util/perf';

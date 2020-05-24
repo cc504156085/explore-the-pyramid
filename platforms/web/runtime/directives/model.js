@@ -66,14 +66,8 @@ function actuallySetSelected(el, binding, vm) {
 
   if (isMultiple && !Array.isArray(value)) {
     process.env.NODE_ENV !== 'production' &&
-      // => 下拉框多选属性的 v-model 期望一个数组值作为它的绑定，但是得到了：value
-      warn(
-        `<select multiple v-model="${binding.expression}"> expects an Array value for its binding, but got ${Object.prototype.toString
-          .call(value)
-          .slice(8, -1)}`,
-        vm,
-      );
-
+    // => 下拉框多选属性的 v-model 期望一个数组值作为它的绑定，但是得到了：value
+    warn(`<select multiple v-model="${ binding.expression }"> expects an Array value for its binding, but got ${ typeof value }`, vm);
     return;
   }
 
@@ -86,7 +80,6 @@ function actuallySetSelected(el, binding, vm) {
     } else {
       if (looseEqual(getValue(option), value)) {
         if (el.selectedIndex !== i) el.selectedIndex = i;
-
         return;
       }
     }

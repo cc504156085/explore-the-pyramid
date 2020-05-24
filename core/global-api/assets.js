@@ -26,6 +26,7 @@ export function initAssetRegisters(Vue: GlobalAPI) {
         if (type === 'directive' && typeof definition === 'function') definition = { bind: definition, update: definition };
 
         // => 在选项中定义这个属性，如：this.options.filters.XXX
+        // => 如果类型是 component ，且 definition 是 Function ，则直接在 options.components 上挂载这个 definition（异步组件）
         this.options[type + 's'][id] = definition;
 
         return definition;

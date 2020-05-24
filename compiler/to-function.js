@@ -1,11 +1,10 @@
-/* @flow */
-
 import { noop, extend } from 'shared/util';
 import { warn as baseWarn, tip } from 'core/util/debug';
 import { generateCodeFrame } from './codeframe';
 
 type CompiledFunctionResult = { render: Function, staticRenderFns: Array<Function> };
 
+/* => 创建 Function 对象 */
 function createFunction(code, errors) {
   try {
     return new Function(code);
@@ -15,6 +14,7 @@ function createFunction(code, errors) {
   }
 }
 
+/* => 带缓存的编译器，将带有 { ast, render, staticRenderFns } 的函数转换成 Function 对象 */
 export function createCompileToFunctionFn(compile: Function): Function {
   const cache = Object.create(null);
 
@@ -35,20 +35,20 @@ export function createCompileToFunctionFn(compile: Function): Function {
            */
           warn(
             'It seems you are using the standalone build of Vue.js in an ' +
-              'environment with Content Security Policy that prohibits unsafe-eval. ' +
-              'The template compiler cannot work in this environment. Consider ' +
-              'relaxing the policy to allow unsafe-eval or pre-compiling your ' +
-              'templates into render functions.',
+            'environment with Content Security Policy that prohibits unsafe-eval. ' +
+            'The template compiler cannot work in this environment. Consider ' +
+            'relaxing the policy to allow unsafe-eval or pre-compiling your ' +
+            'templates into render functions.',
           );
         }
       }
     }
 
-    // => 检查缓存
+    // => 检查缓存，若已缓存，取出缓存结果即可
     const key = options.delimiters ? String(options.delimiters) + template : template;
     if (cache[key]) return cache[key];
 
-    // => 主编译任务函数
+    // => 主编译任务函数，包含 { ast, render, staticRenderFns }
     const compiled = compile(template, options);
 
     // => 检查编译错误/提示
@@ -56,9 +56,9 @@ export function createCompileToFunctionFn(compile: Function): Function {
       if (compiled.errors && compiled.errors.length) {
         if (options.outputSourceRange) {
           // => 编译模板错误
-          compiled.errors.forEach((e) => warn(`Error compiling template: ${e.msg}` + generateCodeFrame(template, e.start, e.end), vm));
+          compiled.errors.forEach((e) => warn(`Error compiling template: ${ e.msg }` + generateCodeFrame(template, e.start, e.end), vm));
         } else {
-          warn(`Error compiling template: ${template}` + compiled.errors.map((e) => `- ${e}`).join('\n'), vm);
+          warn(`Error compiling template: ${ template }` + compiled.errors.map((e) => `- ${ e }`).join('\n'), vm);
         }
       }
 
@@ -74,17 +74,22 @@ export function createCompileToFunctionFn(compile: Function): Function {
     // => 将代码字符串转换为 render 函数
     const res = {};
     const fnGenErrors = [];
+
+    // => 将 render 转换成 Function 对象
     res.render = createFunction(compiled.render, fnGenErrors);
+
+    // => 将 staticRenderFns 逐个转换成 Function 对象
     res.staticRenderFns = compiled.staticRenderFns.map((code) => createFunction(code, fnGenErrors));
 
     // => 检查函数生成错误，只有在编译器本身存在错误时才会发生这种情况，主要用于 codegen 开发使用
     if (process.env.NODE_ENV !== 'production') {
       if ((!compiled.errors || !compiled.errors.length) && fnGenErrors.length) {
-        /* => 生成渲染函数失败 */
-        warn(`Failed to generate render function: ` + fnGenErrors.map(({ err, code }) => `${err.toString()} in ${code}`).join('\n'), vm);
+        // => 生成渲染函数失败
+        warn(`Failed to generate render function: ` + fnGenErrors.map(({ err, code }) => `${ err.toString() } in ${ code }`).join('\n'), vm);
       }
     }
 
+    // => 放入缓存池，避免重复编译，消耗性能
     return (cache[key] = res);
   };
 }

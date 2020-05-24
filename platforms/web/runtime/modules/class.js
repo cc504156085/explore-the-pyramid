@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isDef, isUndef } from 'shared/util';
 
 import { concat, stringifyClass, genClassForVnode } from 'web/util/index';
@@ -14,20 +12,15 @@ function updateClass(oldVnode: any, vnode: any) {
 
   let cls = genClassForVnode(vnode);
 
-  // handle transition classes
+  // => 处理过渡类
   const transitionClass = el._transitionClasses;
-  if (isDef(transitionClass)) {
-    cls = concat(cls, stringifyClass(transitionClass));
-  }
+  if (isDef(transitionClass)) cls = concat(cls, stringifyClass(transitionClass));
 
-  // set the class
+  // => 设置这个类
   if (cls !== el._prevClass) {
     el.setAttribute('class', cls);
     el._prevClass = cls;
   }
 }
 
-export default {
-  create: updateClass,
-  update: updateClass,
-};
+export default { create: updateClass, update: updateClass };

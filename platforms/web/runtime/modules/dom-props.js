@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isDef, isUndef, extend, toNumber } from 'shared/util';
 import { isSVG } from 'web/util/index';
 
@@ -51,7 +49,7 @@ function updateDOMProps(oldVnode: VNodeWithData, vnode: VNodeWithData) {
     } else if (key === 'innerHTML' && isSVG(elm.tagName) && isUndef(elm.innerHTML)) {
       // IE doesn't support innerHTML for SVG elements
       svgContainer = svgContainer || document.createElement('div');
-      svgContainer.innerHTML = `<svg>${cur}</svg>`;
+      svgContainer.innerHTML = `<svg>${ cur }</svg>`;
       const svg = svgContainer.firstChild;
       while (elm.firstChild) {
         elm.removeChild(elm.firstChild);
@@ -61,16 +59,17 @@ function updateDOMProps(oldVnode: VNodeWithData, vnode: VNodeWithData) {
       }
     } else if (
       // skip the update if old and new VDOM state is the same.
-      // `value` is handled separately because the DOM value may be temporarily
-      // out of sync with VDOM state due to focus, composition and modifiers.
-      // This  #4521 by skipping the unnecesarry `checked` update.
+    // `value` is handled separately because the DOM value may be temporarily
+    // out of sync with VDOM state due to focus, composition and modifiers.
+    // This  #4521 by skipping the unnecesarry `checked` update.
       cur !== oldProps[key]
     ) {
       // some property updates can throw
       // e.g. `value` on <progress> w/ non-finite value
       try {
         elm[key] = cur;
-      } catch (e) {}
+      } catch (e) {
+      }
     }
   }
 }
@@ -90,7 +89,8 @@ function isNotInFocusAndDirty(elm: acceptValueElm, checkVal: string): boolean {
   // work around IE bug when accessing document.activeElement in an iframe
   try {
     notInFocus = document.activeElement !== elm;
-  } catch (e) {}
+  } catch (e) {
+  }
   return notInFocus && elm.value !== checkVal;
 }
 

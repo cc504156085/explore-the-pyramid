@@ -1,5 +1,3 @@
-/* @flow */
-
 import { warn, nextTick, emptyObject, handleError, defineReactive } from '../util/index';
 
 import { createElement } from '../vdom/create-element';
@@ -43,7 +41,7 @@ export function initRender(vm: Component) {
 
 export let currentRenderingInstance: Component | null = null;
 
-// for testing only => 仅用于测试
+// => 仅用于测试
 export function setCurrentRenderingInstance(vm: Component) {
   currentRenderingInstance = vm;
 }
@@ -52,11 +50,11 @@ export function renderMixin(Vue: Class<Component>) {
   // install runtime convenience helpers => 注册运行时便利助手
   installRenderHelpers(Vue.prototype);
 
-  Vue.prototype.$nextTick = function (fn: Function) {
+  Vue.prototype.$nextTick = function(fn: Function) {
     return nextTick(fn, this);
   };
 
-  Vue.prototype._render = function (): VNode {
+  Vue.prototype._render = function(): VNode {
     /* => 缓存调用的上下文 */
     const vm: Component = this;
 

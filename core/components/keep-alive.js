@@ -8,26 +8,31 @@ function getComponentName(opts: ?VNodeComponentOptions): ?string {
   return opts && (opts.Ctor.options.name || opts.tag);
 }
 
-/* => 匹配 */
+/* => 检查 name 是否匹配 */
 function matches(pattern: string | RegExp | Array<string>, name: string): boolean {
   if (Array.isArray(pattern)) {
     return pattern.indexOf(name) > -1;
   } else if (typeof pattern === 'string') {
+    // => 字符串情况，如：a,b,c
     return pattern.split(',').indexOf(name) > -1;
   } else if (isRegExp(pattern)) {
+    // => 正则情况
     return pattern.test(name);
   }
 
   return false;
 }
 
-/* => 删除缓存 */
+/* => 维持（修正）缓存 */
 function pruneCache(keepAliveInstance: any, filter: Function) {
   const { cache, keys, _vnode } = keepAliveInstance;
   for (const key in cache) {
+    // => 取出缓存中的 VNode
     const cachedNode: ?VNode = cache[key];
     if (cachedNode) {
       const name: ?string = getComponentName(cachedNode.componentOptions);
+
+      // => 若 name 不符合 filter 条件
       if (name && !filter(name)) pruneCacheEntry(cache, key, keys, _vnode);
     }
   }
@@ -41,8 +46,9 @@ function pruneCacheEntry(cache: VNodeCache, key: string, keys: Array<string>, cu
   // => 销毁组件实例
   if (cached && (!current || cached.tag !== current.tag)) cached.componentInstance.$destroy();
 
-  // => 置空并从键数组中移除
+  // => 置空并从缓存中移除
   cache[key] = null;
+
   remove(keys, key);
 }
 
@@ -55,9 +61,9 @@ export default {
   abstract: true, // => 抽象组件
 
   props: {
+    max: [String, Number],
     include: patternTypes,
     exclude: patternTypes,
-    max: [String, Number],
   },
 
   created() {
@@ -94,7 +100,7 @@ export default {
       const key: ?string =
         vnode.key == null
           ? // => 相同的构造函数可能被注册为不同的本地组件，因此仅使用 cid 是不够的
-            componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
+          componentOptions.Ctor.cid + (componentOptions.tag ? `::${ componentOptions.tag }` : '')
           : vnode.key;
       if (cache[key]) {
         vnode.componentInstance = cache[key].componentInstance;
