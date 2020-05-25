@@ -47,7 +47,7 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   // => 这是用于标识“基本”构造函数，以在 Weex 的多实例方案中扩展所有纯对象组件。
   Vue.options._base = Vue;
 
-  // => 初始化内置组件 keep-alive ，将内置组件合并至 components 选项
+  // => 初始化内置组件 keep-alive ，将内置组件合并至 Vue components 选项
   extend(Vue.options.components, builtInComponents);
 
   // => 初始化全局 API

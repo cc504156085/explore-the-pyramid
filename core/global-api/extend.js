@@ -8,7 +8,7 @@ export function initExtend(Vue: GlobalAPI) {
   let cid = 1;
 
   // => 类继承：创建一个子类，继承 Vue 的一些功能
-  Vue.extend = function (extendOptions: Object): Function {
+  Vue.extend = function(extendOptions: Object): Function {
     extendOptions = extendOptions || {};
 
     // => 缓存父类、父类 cid、扩展选项的构造函数
@@ -16,7 +16,7 @@ export function initExtend(Vue: GlobalAPI) {
     const SuperId = Super.cid;
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {});
 
-    // => 如果有缓存，直接返回即可。（防止重复构造，浪费性能）
+    // => 如果有缓存，直接返回即可。（多个实例引用同一个组件时，防止重复构造，浪费性能）
     if (cachedCtors[SuperId]) return cachedCtors[SuperId];
 
     // => 校验当前实例或者父级实例的组件名
@@ -50,7 +50,7 @@ export function initExtend(Vue: GlobalAPI) {
     if (Sub.options.computed) initComputed(Sub);
 
     /* => 将父类中存在的属性复制到子类中（extend、mixin、use、component、directive、filter） */
-    // => 允许进一步的扩展/混合/插件使用
+    // => 允许进一步的扩展/混合/插件使用（无限套娃）
     Sub.extend = Super.extend;
     Sub.mixin = Super.mixin;
     Sub.use = Super.use;

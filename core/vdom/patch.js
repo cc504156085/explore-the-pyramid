@@ -57,6 +57,7 @@ function sameInputType(a, b) {
 
 /* => 创建 old 节点的索引的 key （默认就是 dom 节点的索引） */
 /* => 所以一般不建议用 v-for="(item,index) in list" 中的 index 作为 :key 的值 */
+
 /* => 参数：old 节点子节点、old 节点开始索引、old 节点结束索引 */
 function createKeyToOldIdx(children, beginIdx, endIdx) {
   let i, key;
@@ -149,7 +150,7 @@ export function createPatchFunction(backend) {
         if (isUnknownElement(vnode, creatingElmInVPre)) {
           // => 未知自定义元素: tag - 您是否正确注册了组件？对于递归组件，请确保提供 name 选项。
           warn(
-            `Unknown custom element: <${tag}> - did you register the component correctly? 
+            `Unknown custom element: <${ tag }> - did you register the component correctly? 
              For recursive components, make sure to provide the "name" option.`,
             vnode.context,
           );
@@ -197,7 +198,11 @@ export function createPatchFunction(backend) {
   function createComponent(vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data;
     if (isDef(i)) {
+
+      // => Keep-Alive 组件内的子组件
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive;
+
+      // => 执行 Keep-Alive init 初始化 hook
       if (isDef((i = i.hook)) && isDef((i = i.init))) i(vnode, false /* hydrating => 保持 */);
 
       /**
@@ -522,7 +527,7 @@ export function createPatchFunction(backend) {
         /* => 且在缓存对象中已存在，抛出警告 */
         if (seenKeys[key]) {
           /* => 检测到重复键： key 。这可能会导致更新错误。 */
-          warn(`Duplicate keys detected: '${key}'. This may cause an update error.`, vnode.context);
+          warn(`Duplicate keys detected: '${ key }'. This may cause an update error.`, vnode.context);
         } else {
           /* => 不存在则存入缓存对象，值标记为 true */
           seenKeys[key] = true;
@@ -796,10 +801,10 @@ export function createPatchFunction(backend) {
                */
               warn(
                 'The client-side rendered virtual DOM tree is not matching ' +
-                  'server-rendered content. This is likely caused by incorrect ' +
-                  'HTML markup, for example nesting block-level elements inside ' +
-                  '<p>, or missing <tbody>. Bailing hydration and performing ' +
-                  'full client-side render.',
+                'server-rendered content. This is likely caused by incorrect ' +
+                'HTML markup, for example nesting block-level elements inside ' +
+                '<p>, or missing <tbody>. Bailing hydration and performing ' +
+                'full client-side render.',
               );
             }
           }

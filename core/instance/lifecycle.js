@@ -21,7 +21,7 @@ export function setActiveInstance(vm: Component) {
 export function initLifecycle(vm: Component) {
   const options = vm.$options;
 
-  // => 定位第一个非抽象父级
+  // => 定位第一个非抽象父级（抽象组件：Keep-Alive / Transition ）
   let parent = options.parent;
   if (parent && !options.abstract) {
     /* => 循环拿到父级，如果父级还是抽象类，则继续自底向上循环 */

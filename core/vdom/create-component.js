@@ -89,6 +89,7 @@ export function createComponent(
 ): VNode | Array<VNode> | void {
   if (isUndef(Ctor)) return;
 
+  // => Vue 构造函数
   const baseCtor = context.$options._base;
 
   // => 普通选项对象：将其转换为构造函数
@@ -98,7 +99,6 @@ export function createComponent(
   if (typeof Ctor !== 'function') {
     // => 无效的组件定义： Ctor
     if (process.env.NODE_ENV !== 'production') warn(`Invalid Component definition: ${ String(Ctor) }`, context);
-
     return;
   }
 
@@ -125,7 +125,7 @@ export function createComponent(
 
   data = data || {};
 
-  // => 解析构造函数选项，以防组件构造函数创建后应用全局混合
+  // => 解析构造函数选项，以防组件构造函数创建后应用全局 mixin
   resolveConstructorOptions(Ctor);
 
   // => 将组件 v-model 的 data 转换为 props 和 events
@@ -150,7 +150,7 @@ export function createComponent(
     if (slot) data.slot = slot;
   }
 
-  // => 将组件管理钩子安装到占位符节点
+  // => 将组件管理钩子安装到占位符节点（用户后续 patch ）
   installComponentHooks(data);
 
   // => 返回一个占位符虚拟节点
@@ -191,16 +191,20 @@ function installComponentHooks(data: VNodeData) {
     const key = hooksToMerge[i];
     const existing = hooks[key];
     const toMerge = componentVNodeHooks[key];
+
+    // => 先执行原有的钩子，再执行此时合并的钩子
     if (existing !== toMerge && !(existing && existing._merged)) hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge;
   }
 }
 
 /* => 合并钩子 */
 function mergeHook(f1: any, f2: any): Function {
+  // => 如果是相同的钩子，则依次执行
   const merged = (a, b) => {
     f1(a, b);
     f2(a, b);
   };
+
   merged._merged = true;
   return merged;
 }

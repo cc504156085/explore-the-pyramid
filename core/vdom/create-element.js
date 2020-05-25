@@ -51,10 +51,7 @@ export function _createElement(
   if (isDef(data) && isDef(data.__ob__)) {
     // => 避免使用已观测的数据对象作为 vnode 数据：JSON.stringify(data) 。应总是在每个渲染函数中创建新的 vnode 数据对象！
     process.env.NODE_ENV !== 'production' &&
-    warn(
-      `Avoid using observed data object as vnode data: ${ JSON.stringify(data) }. Always create fresh vnode data objects in each render!`,
-      context,
-    );
+    warn(`Avoid using observed data object as vnode data: ${ JSON.stringify(data) }. Always create fresh vnode data objects in each render!`, context);
 
     // => 发出警告后使用空注释节点代替
     return createEmptyVNode();
@@ -105,7 +102,7 @@ export function _createElement(
       vnode = new VNode(tag, data, children, undefined, undefined, context);
     }
   } else {
-    // => 正好是组件选项/构造函数
+    // => 正好是组件选项/构造函数（ tag 是组件对象）
     vnode = createComponent(tag, data, context, children);
   }
 

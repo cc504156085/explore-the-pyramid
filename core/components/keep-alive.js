@@ -46,7 +46,7 @@ function pruneCacheEntry(cache: VNodeCache, key: string, keys: Array<string>, cu
   // => 销毁组件实例
   if (cached && (!current || cached.tag !== current.tag)) cached.componentInstance.$destroy();
 
-  // => 置空并从缓存中移除
+  // => 置空并从缓存中移除（会被垃圾回收机制回收）
   cache[key] = null;
 
   remove(keys, key);
@@ -68,8 +68,8 @@ export default {
 
   created() {
     // => 实例创建时 | 创建缓存对象与键集合数组
-    this.cache = Object.create(null);
     this.keys = [];
+    this.cache = Object.create(null);
   },
 
   destroyed() {
@@ -84,39 +84,54 @@ export default {
   },
 
   render() {
+    // => keep-alive 组件包含的内容
     const slot = this.$slots.default;
+
+    // => 获得内容中的第一个子组件节点（不是普通元素节点）
     const vnode: VNode = getFirstComponentChild(slot);
+
+    // => 拿到该子组件选项
     const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions;
     if (componentOptions) {
-      // check pattern => 检查模式
+      // => 检查且获取组件名
       const name: ?string = getComponentName(componentOptions);
       const { include, exclude } = this;
 
-      // not included => 不包括
-      // excluded => 被排除在外
+      // => 匹配组件名是否包含在 props 的 include 与 exclude 内，来决定要不要缓存
       if ((include && (!name || !matches(include, name))) || (exclude && name && matches(exclude, name))) return vnode;
 
       const { cache, keys } = this;
+
+      // => 若组件的 key 未定义，则使用组件的 cid 与标签名拼接一个
       const key: ?string =
         vnode.key == null
           ? // => 相同的构造函数可能被注册为不同的本地组件，因此仅使用 cid 是不够的
           componentOptions.Ctor.cid + (componentOptions.tag ? `::${ componentOptions.tag }` : '')
           : vnode.key;
+
+      // => LRU 缓存策略
       if (cache[key]) {
+
+        // => 用于调研销毁组件 hook
         vnode.componentInstance = cache[key].componentInstance;
-        // => 使当前键为最新
+
+        // => 使当前 key 为最新（放到最后）
         remove(keys, key);
         keys.push(key);
       } else {
+        // => 缓存 VNode 与 key
         cache[key] = vnode;
         keys.push(key);
-        //=> 删除最老的条目（LRU 算法）
+
+        // => 删除最老的条目
         if (this.max && keys.length > parseInt(this.max)) pruneCacheEntry(cache, keys[0], keys, this._vnode);
       }
 
+      // => 标识为缓存组件
       vnode.data.keepAlive = true;
     }
 
+    // => 返回不需要缓存 VNode 或缓存的第一个子组件
     return vnode || (slot && slot[0]);
   },
 };
