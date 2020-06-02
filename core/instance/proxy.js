@@ -1,6 +1,3 @@
-/* => 没有类型检查这个文件，因为 flow 不能很好地发挥与代理 */
-/* not type checking this file because flow doesn't play well with Proxy */
-
 import config from 'core/config';
 import { warn, makeMap, isNative } from '../util/index';
 
@@ -9,28 +6,29 @@ let initProxy;
 if (process.env.NODE_ENV !== 'production') {
   const allowedGlobals = makeMap(
     'Infinity,undefined,NaN,isFinite,isNaN,' +
-      'parseFloat,parseInt,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,' +
-      'Math,Number,Date,Array,Object,Boolean,String,RegExp,Map,Set,JSON,Intl,' +
-      'require', // for Webpack/Browserify
+    'parseFloat,parseInt,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,' +
+    'Math,Number,Date,Array,Object,Boolean,String,RegExp,Map,Set,JSON,Intl,' +
+    'require', // for Webpack/Browserify
   );
 
+  // => 属性或方法 key 未在实例上定义，但在渲染期间被引用。通过初始化属性，确保在 data 选项中或对于基于类的组件，此属性都是反应性的。
   const warnNonPresent = (target, key) => {
     warn(
-      `Property or method "${key}" is not defined on the instance but ` +
-        'referenced during render. Make sure that this property is reactive, ' +
-        'either in the data option, or for class-based components, by ' +
-        'initializing the property. ' +
-        'See: https://vuejs.org/v2/guide/reactivity.html#Declaring-Reactive-Properties.',
+      `Property or method "${ key }" is not defined on the instance but ` +
+      'referenced during render. Make sure that this property is reactive, ' +
+      'either in the data option, or for class-based components, by ' +
+      'initializing the property. ' +
+      'See: https://vuejs.org/v2/guide/reactivity.html#Declaring-Reactive-Properties.',
       target,
     );
   };
 
   const warnReservedPrefix = (target, key) => {
     warn(
-      `Property "${key}" must be accessed with "$data.${key}" because ` +
-        'properties starting with "$" or "_" are not proxied in the Vue instance to ' +
-        'prevent conflicts with Vue internals. ' +
-        'See: https://vuejs.org/v2/api/#data',
+      `Property "${ key }" must be accessed with "$data.${ key }" because ` +
+      'properties starting with "$" or "_" are not proxied in the Vue instance to ' +
+      'prevent conflicts with Vue internals. ' +
+      'See: https://vuejs.org/v2/api/#data',
       target,
     );
   };
@@ -42,7 +40,7 @@ if (process.env.NODE_ENV !== 'production') {
     config.keyCodes = new Proxy(config.keyCodes, {
       set(target, key, value) {
         if (isBuiltInModifier(key)) {
-          warn(`Avoid overwriting built-in modifier in config.keyCodes: .${key}`);
+          warn(`Avoid overwriting built-in modifier in config.keyCodes: .${ key }`);
           return false;
         } else {
           target[key] = value;
@@ -76,7 +74,7 @@ if (process.env.NODE_ENV !== 'production') {
 
   initProxy = function initProxy(vm) {
     if (hasProxy) {
-      // determine which proxy handler to use => 确定使用哪个代理处理程序
+      // => 确定使用哪个代理处理程序
       const options = vm.$options;
       const handlers = options.render && options.render._withStripped ? getHandler : hasHandler;
       vm._renderProxy = new Proxy(vm, handlers);

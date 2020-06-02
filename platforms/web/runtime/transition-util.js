@@ -1,14 +1,9 @@
-/* @flow */
-
 import { inBrowser, isIE9 } from 'core/util/index';
 import { addClass, removeClass } from './class-util';
 import { remove, extend, cached } from 'shared/util';
 
 export function resolveTransition(def?: string | Object): ?Object {
-  if (!def) {
-    return;
-  }
-  /* istanbul ignore else */
+  if (!def) return;
   if (typeof def === 'object') {
     const res = {};
     if (def.css !== false) {
@@ -120,7 +115,7 @@ export function getTransitionInfo(
   let type: ?string;
   let timeout = 0;
   let propCount = 0;
-  /* istanbul ignore if */
+
   if (expectedType === TRANSITION) {
     if (transitionTimeout > 0) {
       type = TRANSITION;
@@ -148,7 +143,6 @@ export function getTransitionInfo(
 }
 
 function getTimeout(delays: Array<string>, durations: Array<string>): number {
-  /* istanbul ignore next */
   while (delays.length < durations.length) {
     delays = delays.concat(delays);
   }

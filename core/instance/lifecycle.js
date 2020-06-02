@@ -55,7 +55,7 @@ export function initLifecycle(vm: Component) {
 }
 
 export function lifecycleMixin(Vue: Class<Component>) {
-  Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
+  Vue.prototype._update = function(vnode: VNode, hydrating?: boolean) {
     const vm: Component = this;
     const prevEl = vm.$el;
     const prevVnode = vm._vnode;
@@ -85,7 +85,7 @@ export function lifecycleMixin(Vue: Class<Component>) {
   };
 
   /* => 强制组件重新渲染（只影响实例本身以及插入插槽的子组件） */
-  Vue.prototype.$forceUpdate = function () {
+  Vue.prototype.$forceUpdate = function() {
     const vm: Component = this;
 
     /* => 通知当前实例上的渲染 Watcher 更新 */
@@ -93,7 +93,7 @@ export function lifecycleMixin(Vue: Class<Component>) {
   };
 
   /* => 完全销毁一个 vm 实例 */
-  Vue.prototype.$destroy = function () {
+  Vue.prototype.$destroy = function() {
     const vm: Component = this;
 
     /* => 说明当前 vm 实例正在被销毁（防止重复销毁） */
@@ -160,8 +160,8 @@ export function mountComponent(vm: Component, el: ?Element, hydrating?: boolean)
         /* => 在模板编译器不可用的情况下，您使用的是仅运行时 build 的Vue。将模板预编译为 render 函数，或使用包含编译器的 build 文件 */
         warn(
           'You are using the runtime-only build of Vue where the template ' +
-            'compiler is not available. Either pre-compile the templates into ' +
-            'render functions, or use the compiler-included build.',
+          'compiler is not available. Either pre-compile the templates into ' +
+          'render functions, or use the compiler-included build.',
           vm,
         );
       } else {
@@ -331,7 +331,7 @@ export function callHook(vm: Component, hook: string) {
   // => 调用生命周期钩子时禁用 dep 集合
   pushTarget();
   const handlers = vm.$options[hook];
-  const info = `${hook} hook`;
+  const info = `${ hook } hook`;
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
       invokeWithErrorHandling(handlers[i], vm, null, vm, info);

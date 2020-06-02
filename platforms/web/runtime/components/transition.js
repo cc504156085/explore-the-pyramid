@@ -33,10 +33,12 @@ function getRealChild(vnode: ?VNode): ?VNode {
 
 export function extractTransitionData(comp: Component): Object {
   const data = {};
+
+  // => 将 props 复制到 data 中
   const options: ComponentOptions = comp.$options;
   for (const key in options.propsData) data[key] = comp[key];
 
-  // => 提取侦听器并将它们直接传递给转换方法
+  // => 提取侦听器并将它们直接传递给转换方法（驼峰化）后复制到 data 中
   const listeners: ?Object = options._parentListeners;
   for (const key in listeners) data[camelize(key)] = listeners[key];
 
@@ -66,6 +68,7 @@ export default {
   abstract: true,
 
   render(h: Function) {
+    // => 拿到子组件
     let children: any = this.$slots.default;
     if (!children) return;
 
@@ -110,6 +113,7 @@ export default {
           : id + child.key
         : child.key;
 
+    // => 将当前组件上的数据合并到一个对象中
     const data: Object = ((child.data || (child.data = {})).transition = extractTransitionData(this));
     const oldRawChild: VNode = this._vnode;
     const oldChild: VNode = getRealChild(oldRawChild);

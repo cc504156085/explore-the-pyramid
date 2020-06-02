@@ -117,7 +117,7 @@ export function createComponent(
     if (Ctor === undefined) {
       /**
        * 返回一个异步组件的占位符节点，它作为一个注释节点渲染，但保留了该节点的所有原始信息。
-       * 这些信息将用于异步服务器渲染和混合。
+       * 这些信息将用于异步服务器渲染和混合，等待回调函数去触发父组件更新。
        */
       return createAsyncPlaceholder(asyncFactory, data, context, children, tag);
     }

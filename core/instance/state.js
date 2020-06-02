@@ -1,5 +1,3 @@
-/* @flow */
-
 import config from '../config';
 import Watcher from '../observer/watcher';
 import Dep, { pushTarget, popTarget } from '../observer/dep';
@@ -22,12 +20,7 @@ import {
   isReservedAttribute,
 } from '../util/index';
 
-const sharedPropertyDefinition = {
-  enumerable: true,
-  configurable: true,
-  get: noop,
-  set: noop,
-};
+const sharedPropertyDefinition = { enumerable: true, configurable: true, get: noop, set: noop };
 
 /* => 状态（数据）代理 */
 export function proxy(target: Object, sourceKey: string, key: string) {
@@ -55,9 +48,7 @@ export function initState(vm: Component) {
     observe((vm._data = {}), true /* asRootData */);
   }
   if (opts.computed) initComputed(vm, opts.computed);
-  if (opts.watch && opts.watch !== nativeWatch) {
-    initWatch(vm, opts.watch);
-  }
+  if (opts.watch && opts.watch !== nativeWatch) initWatch(vm, opts.watch);
 }
 
 /* => 初始化 options props */
@@ -66,8 +57,6 @@ function initProps(vm: Component, propsOptions: Object) {
   const props = (vm._props = {});
 
   /* => 缓存 prop keys，以便未来的 props 更新可以使用数组迭代，而不是动态对象键枚举。 */
-  // cache prop keys so that future props updates can iterate using Array
-  // instead of dynamic object key enumeration.
   const keys = (vm.$options._propKeys = []);
   const isRoot = !vm.$parent;
 
@@ -87,7 +76,7 @@ function initProps(vm: Component, propsOptions: Object) {
 
       if (isReservedAttribute(hyphenatedKey) || config.isReservedAttr(hyphenatedKey)) {
         /* => XXX 是一个保留属性，不能用作组件 prop。 */
-        warn(`"${hyphenatedKey}" is a reserved attribute and cannot be used as component prop.`, vm);
+        warn(`"${ hyphenatedKey }" is a reserved attribute and cannot be used as component prop.`, vm);
       }
 
       defineReactive(props, key, value, () => {
@@ -96,9 +85,9 @@ function initProps(vm: Component, propsOptions: Object) {
           /* => 相反，使用基于 prop 值的数据或计算属性。 prop 变了: key */
           warn(
             `Avoid mutating a prop directly since the value will be ` +
-              `overwritten whenever the parent component re-renders. ` +
-              `Instead, use a data or computed property based on the prop's ` +
-              `value. Prop being mutated: "${key}"`,
+            `overwritten whenever the parent component re-renders. ` +
+            `Instead, use a data or computed property based on the prop's ` +
+            `value. Prop being mutated: "${ key }"`,
             vm,
           );
         }
@@ -134,7 +123,7 @@ function initData(vm: Component) {
     /* => 如果不是普通对象，将data赋值为一个空对象，且在开发环境下报警告 => 数据函数应该返回一个对象 */
     data = {};
     process.env.NODE_ENV !== 'production' &&
-      warn('data functions should return an object:\n https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function', vm);
+    warn('data functions should return an object:\n https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function', vm);
   }
 
   // proxy data on instance => 在实例上代理 data ，可通过 this.xxx 访问 data 中的属性
@@ -147,13 +136,13 @@ function initData(vm: Component) {
     if (process.env.NODE_ENV !== 'production') {
       if (methods && hasOwn(methods, key)) {
         /* => 方法 key 已定义为 data 属性。 */
-        warn(`Method "${key}" has already been defined as a data property.`, vm);
+        warn(`Method "${ key }" has already been defined as a data property.`, vm);
       }
     }
     if (props && hasOwn(props, key)) {
       /* => 数据属性 key 已声明为 prop 。改为使用 prop 默认值。 */
       process.env.NODE_ENV !== 'production' &&
-        warn(`The data property "${key}" is already declared as a prop. Use prop default value instead.`, vm);
+      warn(`The data property "${ key }" is already declared as a prop. Use prop default value instead.`, vm);
     } else if (!isReserved(key)) {
       /* => 将不是以 $ _ 开头的属性代理到实例 vm 上 */
       proxy(vm, `_data`, key);
@@ -179,7 +168,7 @@ export function getData(data: Function, vm: Component): any {
   }
 }
 
-/* => 计算属性观察者选项 */
+/* => 计算属性观察者选项（设置为懒的观察者） */
 const computedWatcherOptions = { lazy: true };
 
 /* => 初始化 options computed */
@@ -187,7 +176,7 @@ function initComputed(vm: Component, computed: Object) {
   /* => 创建一个容器，用来收集依赖 */
   const watchers = (vm._computedWatchers = Object.create(null));
 
-  // computed properties are just getters during SSR => 计算属性只是 SSR 期间的 getter
+  // => 计算属性只是 SSR 期间的 getter
   const isSSR = isServerRendering();
 
   for (const key in computed) {
@@ -198,29 +187,27 @@ function initComputed(vm: Component, computed: Object) {
     const getter = typeof userDef === 'function' ? userDef : userDef.get;
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       /* => 计算属性 key 缺少 Getter 。 */
-      warn(`Getter is missing for computed property "${key}".`, vm);
+      warn(`Getter is missing for computed property "${ key }".`, vm);
     }
 
     if (!isSSR) {
-      // create internal watcher for the computed property. => 为计算属性创建内部监视程序。且标识为懒的观察者
+      // => 为计算属性创建内部监视程序。且标识为懒的观察者
       // watchers[key] = new Watcher(vm, getter || noop, noop, computedWatcherOptions);
       watchers[key] = new Watcher(vm, getter || noop, noop, { lazy: true });
     }
 
+    // => 注意：此处并没有判断警告该 key 是否已存在 options.methods 中，若已存在，则该计算属性会默默无效
     /* => 组件定义的计算属性已经在组件原型上定义。我们只需要定义在实例化时定义的计算属性。 */
-    // component-defined computed properties are already defined on the
-    // component prototype. We only need to define computed properties defined
-    // at instantiation here.
     if (!(key in vm)) {
       /* => 若当前实例上不存在这个计算属性，则将其定义在当前实例上 */
       defineComputed(vm, key, userDef);
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {
         /* => 已经在数据中定义了计算属性 key。 */
-        warn(`The computed property "${key}" is already defined in data.`, vm);
+        warn(`The computed property "${ key }" is already defined in data.`, vm);
       } else if (vm.$options.props && key in vm.$options.props) {
         /* => 计算属性 key 已经被定义为一个 prop。 */
-        warn(`The computed property "${key}" is already defined as a prop.`, vm);
+        warn(`The computed property "${ key }" is already defined as a prop.`, vm);
       }
     }
   }
@@ -247,9 +234,9 @@ export function defineComputed(target: any, key: string, userDef: Object | Funct
 
   /* => 如果计算属性被重新赋值且又没提供 set 方法 */
   if (process.env.NODE_ENV !== 'production' && sharedPropertyDefinition.set === noop) {
-    sharedPropertyDefinition.set = function () {
+    sharedPropertyDefinition.set = function() {
       /* => 计算属性 key 被赋值，但它没有 setter。 */
-      warn(`Computed property "${key}" was assigned to but it has no setter.`, this);
+      warn(`Computed property "${ key }" was assigned to but it has no setter.`, this);
     };
   }
 
@@ -259,21 +246,17 @@ export function defineComputed(target: any, key: string, userDef: Object | Funct
 
 /* => 创建 computed getter */
 function createComputedGetter(key) {
-  /* => 返回一个函数，当用户执行该计算属性时，才真正调用取值 */
+  /* => 返回一个函数，当用户读取该计算属性时，触发 getter ，才真正调用取值 */
   return function computedGetter() {
     /* => 拿到观察者 */
     const watcher = this._computedWatchers && this._computedWatchers[key];
 
     if (watcher) {
       /* => 默认第一次为 true，执行获取值之后，改成 false */
-      if (watcher.dirty) {
-        watcher.evaluate();
-      }
+      if (watcher.dirty) watcher.evaluate();
 
       /* => 依赖收集 */
-      if (Dep.target) {
-        watcher.depend();
-      }
+      if (Dep.target) watcher.depend();
 
       /* => 当下一次数据没有变化的时候，直接返回缓存的值 */
       return watcher.value;
@@ -297,17 +280,17 @@ function initMethods(vm: Component, methods: Object) {
         /* => 方法 key 在组件定义中具有类型 typeof methods[key] 。你是否正确地引用了这个函数? */
         /* => 方法应该是一个函数 */
         warn(
-          `Method "${key}" has type "${typeof methods[key]}" in the component definition. Did you reference the function correctly?`,
+          `Method "${ key }" has type "${ typeof methods[key] }" in the component definition. Did you reference the function correctly?`,
           vm,
         );
       }
       if (props && hasOwn(props, key)) {
         /* => 方法 key 已经被定义为一个 prop 。 */
-        warn(`Method "${key}" has already been defined as a prop.`, vm);
+        warn(`Method "${ key }" has already been defined as a prop.`, vm);
       }
       if (key in vm && isReserved(key)) {
         /* => 方法 key 与现有的 Vue 实例方法冲突。避免定义以 _ 或 $ 开头的组件方法。 */
-        warn(`Method "${key}" conflicts with an existing Vue instance method. Avoid defining component methods that start with _ or $.`);
+        warn(`Method "${ key }" conflicts with an existing Vue instance method. Avoid defining component methods that start with _ or $.`);
       }
     }
 
@@ -350,21 +333,21 @@ export function stateMixin(Vue: Class<Component>) {
   // the object here.
 
   const dataDef = {};
-  dataDef.get = function () {
+  dataDef.get = function() {
     return this._data;
   };
 
   const propsDef = {};
-  propsDef.get = function () {
+  propsDef.get = function() {
     return this._props;
   };
 
   if (process.env.NODE_ENV !== 'production') {
-    dataDef.set = function () {
+    dataDef.set = function() {
       /* => 避免替换实例根 $data。请改用嵌套数据属性。 */
       warn('Avoid replacing instance root $data. Use nested data properties instead.', this);
     };
-    propsDef.set = function () {
+    propsDef.set = function() {
       /* => $props 是只读的 */
       warn(`$props is readonly.`, this);
     };
@@ -378,7 +361,7 @@ export function stateMixin(Vue: Class<Component>) {
   Vue.prototype.$set = set;
   Vue.prototype.$delete = del;
 
-  Vue.prototype.$watch = function (expOrFn: string | Function, cb: any, options?: Object): Function {
+  Vue.prototype.$watch = function(expOrFn: string | Function, cb: any, options?: Object): Function {
     const vm: Component = this;
 
     /* => 如果第二个参数是一个纯对象 */
@@ -400,7 +383,7 @@ export function stateMixin(Vue: Class<Component>) {
       try {
         cb.call(vm, watcher.value);
       } catch (error) {
-        handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`);
+        handleError(error, vm, `callback for immediate watcher "${ watcher.expression }"`);
       }
     }
 

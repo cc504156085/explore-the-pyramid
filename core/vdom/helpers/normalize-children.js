@@ -1,5 +1,3 @@
-/* @flow */
-
 import VNode, { createTextVNode } from 'core/vdom/vnode';
 import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util';
 
@@ -51,7 +49,7 @@ function normalizeArrayChildren(children: any, nestedIndex?: string): Array<VNod
     // => 嵌套的
     if (Array.isArray(c)) {
       if (c.length > 0) {
-        c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`);
+        c = normalizeArrayChildren(c, `${ nestedIndex || '' }_${ i }`);
         // => 合并相邻的文本节点
         if (isTextNode(c[0]) && isTextNode(last)) {
           res[lastIndex] = createTextVNode(last.text + (c[0]: any).text);
@@ -74,7 +72,7 @@ function normalizeArrayChildren(children: any, nestedIndex?: string): Array<VNod
         res[lastIndex] = createTextVNode(last.text + c.text);
       } else {
         // => 嵌套数组子元素的默认键(可能由 v-for 生成)
-        if (isTrue(children._isVList) && isDef(c.tag) && isUndef(c.key) && isDef(nestedIndex)) c.key = `__vlist${nestedIndex}_${i}__`;
+        if (isTrue(children._isVList) && isDef(c.tag) && isUndef(c.key) && isDef(nestedIndex)) c.key = `__vlist${ nestedIndex }_${ i }__`;
 
         res.push(c);
       }

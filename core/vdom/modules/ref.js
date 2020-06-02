@@ -1,5 +1,3 @@
-/* @flow */
-
 import { remove, isDef } from 'shared/util';
 
 export default {

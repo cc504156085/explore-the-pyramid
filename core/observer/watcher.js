@@ -40,7 +40,7 @@ export default class Watcher {
     /* => 给每个实例创建一个 watchers 收集池，当前实例下，每创建一个 watcher ，就将自己存入（ $watch 方法） */
     vm._watchers.push(this);
 
-    // => 选项，使用 $watch 时传入
+    // => new Watcher 时传入
     if (options) {
       this.deep = !!options.deep; // => 深度监听
       this.user = !!options.user;

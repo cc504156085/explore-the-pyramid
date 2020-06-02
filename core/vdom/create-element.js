@@ -1,5 +1,3 @@
-/* @flow */
-
 import config from '../config';
 import VNode, { createEmptyVNode } from './vnode';
 import { createComponent } from './create-component';
@@ -21,6 +19,7 @@ export function createElement(
   normalizationType: any,
   alwaysNormalize: boolean,
 ): VNode | Array<VNode> {
+  // => 没有传入 VNode Data，直接传入 children ，将参数前移
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children;
     children = data;
@@ -49,7 +48,7 @@ export function _createElement(
   normalizationType?: number,
 ): VNode | Array<VNode> {
   if (isDef(data) && isDef(data.__ob__)) {
-    // => 避免使用已观测的数据对象作为 vnode 数据：JSON.stringify(data) 。应总是在每个渲染函数中创建新的 vnode 数据对象！
+    // => 避免使用已观测的数据对象作为 VNode data：JSON.stringify(data) 。应总是在每个渲染函数中创建新的 VNode 数据对象！
     process.env.NODE_ENV !== 'production' &&
     warn(`Avoid using observed data object as vnode data: ${ JSON.stringify(data) }. Always create fresh vnode data objects in each render!`, context);
 
@@ -57,7 +56,7 @@ export function _createElement(
     return createEmptyVNode();
   }
 
-  // => v-bind 中的对象语法
+  // => v-bind 中的对象语法，动态组件会有 is 属性
   if (isDef(data) && isDef(data.is)) tag = data.is;
 
   // => 是组件的情况下：设置为假值
@@ -76,6 +75,7 @@ export function _createElement(
     children.length = 0;
   }
 
+  // => 对 children 做规范化
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children);
   } else if (normalizationType === SIMPLE_NORMALIZE) {

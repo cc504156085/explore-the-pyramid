@@ -15,22 +15,22 @@ import { patch } from './patch';
 import platformDirectives from './directives/index';
 import platformComponents from './components/index';
 
-// install platform specific utils => 注册特定的有用平台
+// => 注册特定的有用平台
 Vue.config.mustUseProp = mustUseProp;
 Vue.config.isReservedTag = isReservedTag;
 Vue.config.isReservedAttr = isReservedAttr;
 Vue.config.getTagNamespace = getTagNamespace;
 Vue.config.isUnknownElement = isUnknownElement;
 
-// install platform runtime directives & components => 注册平台运行时的指令和组件
+// => 注册平台运行时的指令和组件（ Transition ）
 extend(Vue.options.directives, platformDirectives);
 extend(Vue.options.components, platformComponents);
 
 /* => 使用虚拟 DOM 更新真正的 DOM （核心算法） */
-// install platform patch function => 如果是在浏览器中运行，则挂载 patch 方法（服务端渲染，不会操作 DOM ）
+// => 如果是在浏览器中运行，则挂载 patch 方法（服务端渲染，不会操作 DOM ）
 Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
-// public mount method => 公共 $mount 方法，挂载到 Vue 的原型
+// => 公共 $mount 方法，挂载到 Vue 的原型
 Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Component {
   /* => 如果 el 元素存在且处于浏览器运行时，则获取该元素的内容 */
   el = el && inBrowser ? query(el) : undefined;
@@ -39,8 +39,7 @@ Vue.prototype.$mount = function(el?: string | Element, hydrating?: boolean): Com
   return mountComponent(this, el, hydrating);
 };
 
-// devtools global hook => devtools全局钩子（可忽略）
-/* istanbul ignore next */
+// => devtools全局钩子（可忽略）
 if (inBrowser) {
   setTimeout(() => {
     if (config.devtools) {

@@ -1,5 +1,3 @@
-/* @flow */
-
 import { emptyNode } from 'core/vdom/patch';
 import { resolveAsset, handleError } from 'core/util/index';
 import { mergeVNodeHook } from 'core/vdom/helpers/index';

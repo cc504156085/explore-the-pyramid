@@ -1,5 +1,3 @@
-/* @flow */
-
 import config from 'core/config';
 import { warn, cached } from 'core/util/index';
 import { mark, measure } from 'core/util/perf';
@@ -92,7 +90,7 @@ Vue.prototype.$mount = function (el?: string | Element, hydrating?: boolean): Co
   return mount.call(this, el, hydrating);
 };
 
-/** 
+/**
  * => 获取元素的 outerHTML ，同时处理 IE 中的 SVG 元素（兼容 IE ）。
  */
 function getOuterHTML(el: Element): string {

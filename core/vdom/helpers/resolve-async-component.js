@@ -11,7 +11,7 @@ function ensureCtor(comp: any, base) {
   return isObject(comp) ? base.extend(comp) : comp;
 }
 
-/* => 创建异步占位节点 */
+/* => 创建异步占位节点（空注释节点） */
 export function createAsyncPlaceholder(
   factory: Function,
   data: ?VNodeData,
@@ -25,7 +25,7 @@ export function createAsyncPlaceholder(
   return node;
 }
 
-/* => 解析异步组件，baseCtor 是 Vue */
+/* => 解析异步组件，baseCtor 是 Function Vue */
 export function resolveAsyncComponent(factory: Function, baseCtor: Class<Component>): Class<Component> | void {
   // => 错误优先级第一
   if (isTrue(factory.error) && isDef(factory.errorComp)) return factory.errorComp;
@@ -36,13 +36,13 @@ export function resolveAsyncComponent(factory: Function, baseCtor: Class<Compone
   // => 当前渲染实例 Vue
   const owner = currentRenderingInstance;
 
-  // => 已经等待（已经解析过了，将当前渲染实例存入即可，将异步组件解析结果缓存起来供未来重渲染）
+  // => 已经等待（已经解析过了，将当前渲染实例存入即可（先判断是否已经存在，去重），将异步组件解析结果缓存起来供未来重渲染）
   if (owner && isDef(factory.owners) && factory.owners.indexOf(owner) === -1) factory.owners.push(owner);
 
   // => 若标识 loading 为 true ，并且异步组件未决议，则渲染 loading 组件
   if (isTrue(factory.loading) && isDef(factory.loadingComp)) return factory.loadingComp;
 
-  // => 第一次 factory 上没有 owners 属性
+  // => 第一次执行本方法时， factory 上没有 owners 属性
   if (owner && !isDef(factory.owners)) {
     // => 给 factory 加上这个属性，避免重复解析
     const owners = (factory.owners = [owner]);
@@ -53,6 +53,7 @@ export function resolveAsyncComponent(factory: Function, baseCtor: Class<Compone
     let timerLoading = null;
     let timerTimeout = null;
 
+    // => 监听 destroyed 钩子，从 owners 数组中移除 owner
     owner.$on('hook:destroyed', () => remove(owners, owner));
 
     // => 强制渲染更新
@@ -80,25 +81,26 @@ export function resolveAsyncComponent(factory: Function, baseCtor: Class<Compone
       factory.resolved = ensureCtor(res, baseCtor);
 
       // => 只有在这不是同步解析时才调用回调(异步解析在 SSR 期间被设置为同步)
-      // => 当异步解析组件，调用 factory(resolve, reject) 的 resolve 方法时， sync 已经改成了 false ，然后强制渲染更新
+      // => 当异步解析组件，调用 resolve 回调时，这里的同步代码已经将 sync 改成了 false ，然后强制渲染更新
       if (!sync) {
         forceRender(true);
       } else {
+        // => 否则工厂函数内部是同步执行
         owners.length = 0;
       }
     });
 
     const reject = once((reason) => {
       process.env.NODE_ENV !== 'production' &&
-      // => 无法解析异步组件
-      warn(`Failed to resolve async component: ${ String(factory) }` + (reason ? `Reason: ${ reason }` : ''));
+        // => 无法解析异步组件
+        warn(`Failed to resolve async component: ${String(factory)}` + (reason ? `Reason: ${reason}` : ''));
 
-      // => 如果配置了错误组件，直接强制渲染
+      // => 如果配置了错误组件，则渲染错误组件
       if (isDef(factory.errorComp)) {
         // => 标识为 true
         factory.error = true;
 
-        // => 强制渲染更新，再次执行 resolveAsyncComponent() 方法时，factory.error 为 true ，直接渲染错误组件
+        // => 强制渲染更新，再次执行 resolveAsyncComponent() 方法时，factory.error 为 true ，将直接渲染错误组件
         forceRender(true);
       }
     });
@@ -106,13 +108,13 @@ export function resolveAsyncComponent(factory: Function, baseCtor: Class<Compone
     // => factory 执行，在异步代码执行完成后，resolve 才调用，它包含组件相关的信息（组件路径 / template ）
     const res = factory(resolve, reject);
 
-    // => 如果返回的 res 是一个对象，则使用的是 Promise 的方式来加载异步组件
+    // => 如果返回的 res 是一个对象，则使用的是 Promise 的方式来加载的异步组件
     if (isObject(res)) {
       if (isPromise(res)) {
-        // factory 是 () => import() 的形式，返回一个 Promise ，调用它的 then 方法，成功则执行 resolve ，失败则执行 reject
+        // factory 是 () => import() 的形式，返回 Promise ，调用它的 then 方法，成功则执行 resolve ，失败则执行 reject
         if (isUndef(factory.resolved)) res.then(resolve, reject);
       } else if (isPromise(res.component)) {
-        // => 高阶异步组件，factory 执行返回的是一个对象，而这个对象的 component 属性值是一个 Promise
+        // => 高阶异步组件，factory 执行返回的是一个对象，而这个对象的 component 属性的值返回 Promise
         res.component.then(resolve, reject);
 
         // => 如果提供了错误组件
@@ -147,8 +149,8 @@ export function resolveAsyncComponent(factory: Function, baseCtor: Class<Compone
           timerTimeout = setTimeout(() => {
             timerTimeout = null;
 
-            // => 若超时后异步组件仍未决议，将 Promise 状态改为拒绝状态（调用 reject ）
-            if (isUndef(factory.resolved)) reject(process.env.NODE_ENV !== 'production' ? `timeout (${ res.timeout }ms)` : null);
+            // => 若超时后异步组件仍未决议，则调用 reject
+            if (isUndef(factory.resolved)) reject(process.env.NODE_ENV !== 'production' ? `timeout (${res.timeout}ms)` : null);
           }, res.timeout);
         }
       }
