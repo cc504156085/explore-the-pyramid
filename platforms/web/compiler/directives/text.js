@@ -1,5 +1,3 @@
-/* @flow */
-
 import { addProp } from 'compiler/helpers';
 
 export default function text(el: ASTElement, dir: ASTDirective) {

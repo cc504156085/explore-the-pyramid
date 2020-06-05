@@ -1,5 +1,3 @@
-/* @flow */
-
 import config from 'core/config';
 import { addHandler, addProp, getBindingAttr } from 'compiler/helpers';
 import { genComponentModel, genAssignmentCode } from 'compiler/directives/model';
@@ -7,8 +5,6 @@ import { genComponentModel, genAssignmentCode } from 'compiler/directives/model'
 let warn;
 
 /* => 在某些情况下，使用的事件必须在运行时确定，因此我们在编译期间使用了一些保留的标记。 */
-// in some cases, the event used has to be determined at runtime
-// so we used some reserved tokens during compile.
 export const RANGE_TOKEN = '__r';
 export const CHECKBOX_RADIO_TOKEN = '__c';
 

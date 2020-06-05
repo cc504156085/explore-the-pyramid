@@ -1,5 +1,3 @@
-/* @flow */
-
 import he from 'he';
 import { parseHTML } from './html-parser';
 import { parseText } from './text-parser';
@@ -104,18 +102,18 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       element = processElement(element, options);
     }
 
-    // tree management => 树管理
+    // => 树管理
     if (!stack.length && element !== root) {
-      // allow root elements with v-if, v-else-if and v-else => 允许根元素使用 v-if 、 v-else-if 和 v-else
+      // => 允许根元素使用 v-if 、 v-else-if 和 v-else
       if (root.if && (element.elseif || element.else)) {
         if (process.env.NODE_ENV !== 'production') {
           checkRootConstraints(element);
         }
 
-        /* => 添加 if 条件 */
+        //  => 添加 if 条件
         addIfCondition(root, { exp: element.elseif, block: element });
       } else if (process.env.NODE_ENV !== 'production') {
-        /* => 组件模板应该只包含一个根元素。如果您在多个元素上使用 v-if，那么使用 v-else-if 来链接它们。 */
+        // => 组件模板应该只包含一个根元素。如果您在多个元素上使用 v-if，那么使用 v-else-if 来链接它们。
         warnOnce(
           `Component template should contain exactly one root element. ` +
             `If you are using v-if on multiple elements, ` +
@@ -130,9 +128,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
         processIfConditions(element, currentParent);
       } else {
         if (element.slotScope) {
-          // scoped slot => 作用域插槽
-          // keep it in the children list so that v-else(-if) conditions can
-          // find it as the prev node. => 将其保留在子列表中，以便 v-else(-if) 条件可以将其作为 prev 节点查找。
+          // => 作用域插槽，将其保留在子列表中，以便 v-else(-if) 条件可以将其作为 prev 节点查找。
           const name = element.slotTarget || '"default"';
           (currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element;
         }
@@ -141,26 +137,19 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       }
     }
 
-    // final children cleanup  => 最后清理 children
-    // filter out scoped slots => 过滤出作用域槽
+    // => 最后清理 children ，过滤出作用域槽
     element.children = element.children.filter((c) => !(c: any).slotScope);
 
-    // remove trailing whitespace node again => 再次删除尾随空白节点
+    // => 再次删除尾随空白节点
     trimEndingWhitespace(element);
 
-    // check pre state => 检查之前的状态
-    if (element.pre) {
-      inVPre = false;
-    }
+    // => 检查之前的状态
+    if (element.pre) inVPre = false;
 
-    if (platformIsPreTag(element.tag)) {
-      inPre = false;
-    }
+    if (platformIsPreTag(element.tag)) inPre = false;
 
-    // apply post-transforms => 应用转化后
-    for (let i = 0; i < postTransforms.length; i++) {
-      postTransforms[i](element, options);
-    }
+    // => 应用转化后
+    for (let i = 0; i < postTransforms.length; i++) postTransforms[i](element, options);
   }
 
   /* => 调整结束的空白 */
@@ -693,102 +682,124 @@ function processComponent(el) {
   }
 }
 
+/* => 解析指令， v- / @ / : / # 开头的属性（v-model、v-on、v-bind、v-slot） */
 function processAttrs(el) {
   const list = el.attrsList;
   let i, l, name, rawName, value, modifiers, syncGen, isDynamic;
+
   for (i = 0, l = list.length; i < l; i++) {
     name = rawName = list[i].name;
     value = list[i].value;
+
+    // => 匹配是否以 v- / @ / : / #
     if (dirRE.test(name)) {
-      // mark element as dynamic
+      // => 将元素标记为动态（有属性绑定）
       el.hasBindings = true;
-      // modifiers
+
+      // => 修饰符，去除指令特征（替换成空格），如：v-bind => bind
       modifiers = parseModifiers(name.replace(dirRE, ''));
-      // support .foo shorthand syntax for the .prop modifier
+
+      // => 为 .prop 修饰符支持 .foo 速记语法
       if (process.env.VBIND_PROP_SHORTHAND && propBindRE.test(name)) {
         (modifiers || (modifiers = {})).prop = true;
         name = `.` + name.slice(1).replace(modifierRE, '');
       } else if (modifiers) {
         name = name.replace(modifierRE, '');
       }
+
       if (bindRE.test(name)) {
-        // v-bind
+        // => v-bind
         name = name.replace(bindRE, '');
+
+        // => 解析过滤器
         value = parseFilters(value);
+
+        // => 动态属性名 v-bind:[key]
         isDynamic = dynamicArgRE.test(name);
-        if (isDynamic) {
-          name = name.slice(1, -1);
-        }
+
+        // => 截去 [] 剩下 key
+        if (isDynamic) name = name.slice(1, -1);
+
+        // => v-bind 表达式的值不能为空。在 v-bind: name 中找到
         if (process.env.NODE_ENV !== 'production' && value.trim().length === 0) {
           warn(`The value for a v-bind expression cannot be empty. Found in "v-bind:${name}"`);
         }
+
+        // => 处理修饰符
         if (modifiers) {
+          // => 作为一个 DOM Property （绑定在 DOM 对象上） 绑定而不是作为 Attribute （写在标签里） 绑定
+          /**
+           * Attribute：特性（可以有自定义的特性）
+           * Property：属性（即 HTML 提供的最基本的属性）
+           * Attribute 的变化会引起 Property 的变化, 而 Property 的变化也会同步给 Attribute 进行变化（ input 的 value 除外）
+           */
           if (modifiers.prop && !isDynamic) {
             name = camelize(name);
             if (name === 'innerHtml') name = 'innerHTML';
           }
-          if (modifiers.camel && !isDynamic) {
-            name = camelize(name);
-          }
+
+          // => 将 kebab-case attribute 名转换为 camelCase
+          if (modifiers.camel && !isDynamic) name = camelize(name);
+
+          // => 语法糖，会扩展成一个更新父组件绑定值的 v-on 侦听器
           if (modifiers.sync) {
             syncGen = genAssignmentCode(value, `$event`);
             if (!isDynamic) {
               addHandler(el, `update:${camelize(name)}`, syncGen, null, false, warn, list[i]);
-              if (hyphenate(name) !== camelize(name)) {
-                addHandler(el, `update:${hyphenate(name)}`, syncGen, null, false, warn, list[i]);
-              }
+
+              // => key-came 与 keyCame
+              if (hyphenate(name) !== camelize(name)) addHandler(el, `update:${hyphenate(name)}`, syncGen, null, false, warn, list[i]);
             } else {
-              // handler w/ dynamic event name
-              addHandler(
-                el,
-                `"update:"+(${name})`,
-                syncGen,
-                null,
-                false,
-                warn,
-                list[i],
-                true, // dynamic
-              );
+              // => 具有动态事件名称的处理程序
+              addHandler(el, `"update:"+(${name})`, syncGen, null, false, warn, list[i], true /* => dynamic */);
             }
           }
         }
+
         if ((modifiers && modifiers.prop) || (!el.component && platformMustUseProp(el.tag, el.attrsMap.type, name))) {
+          // => 组件 props
           addProp(el, name, value, list[i], isDynamic);
         } else {
+          // => 普通 attrs
           addAttr(el, name, value, list[i], isDynamic);
         }
       } else if (onRE.test(name)) {
-        // v-on
+        // => v-on
         name = name.replace(onRE, '');
         isDynamic = dynamicArgRE.test(name);
-        if (isDynamic) {
-          name = name.slice(1, -1);
-        }
+        if (isDynamic) name = name.slice(1, -1);
         addHandler(el, name, value, modifiers, false, warn, list[i], isDynamic);
       } else {
-        // normal directives
+        // => 普通指令（ v-model / v-slot / 自定义指令）
         name = name.replace(dirRE, '');
-        // parse arg
+
+        // => 解析参数（ v-slot ），如 "slot:header" ，match 后 arg = argMatch[1] = "header"
         const argMatch = name.match(argRE);
+
         let arg = argMatch && argMatch[1];
         isDynamic = false;
+
         if (arg) {
+          // => 截取后 name = "slot"
           name = name.slice(0, -(arg.length + 1));
+
+          // => 动态属性名
           if (dynamicArgRE.test(arg)) {
             arg = arg.slice(1, -1);
             isDynamic = true;
           }
         }
+
+        // => 添加指令
         addDirective(el, name, rawName, value, arg, isDynamic, modifiers, list[i]);
-        if (process.env.NODE_ENV !== 'production' && name === 'model') {
-          checkForAliasModel(el, value);
-        }
+        if (process.env.NODE_ENV !== 'production' && name === 'model') checkForAliasModel(el, value);
       }
     } else {
-      // literal attribute
+      // => 文字属性（HTML attr）
       if (process.env.NODE_ENV !== 'production') {
         const res = parseText(value, delimiters);
         if (res) {
+          // => 属性内插值已删除。请改用 v-bind 或冒号速记。例如，使用 <div :id="val"> 代替 <div id="{{ val }}">
           warn(
             `${name}="${value}": ` +
               'Interpolation inside attributes has been removed. ' +
@@ -798,12 +809,12 @@ function processAttrs(el) {
           );
         }
       }
+
+      // => 添加到 attrs
       addAttr(el, name, JSON.stringify(value), list[i]);
-      // #6887 firefox doesn't update muted state if set via attribute
-      // even immediately after element creation
-      if (!el.component && name === 'muted' && platformMustUseProp(el.tag, el.attrsMap.type, name)) {
-        addProp(el, name, 'true', list[i]);
-      }
+
+      // => 即使在创建元素后立即通过属性设置，firefox 也不会更新静音状态
+      if (!el.component && name === 'muted' && platformMustUseProp(el.tag, el.attrsMap.type, name)) addProp(el, name, 'true', list[i]);
     }
   }
 }
@@ -819,13 +830,17 @@ function checkInFor(el: ASTElement): boolean {
   return false;
 }
 
+// => 解析修饰符
 function parseModifiers(name: string): Object | void {
+  // => 如："bind.sync.number" ，match 后有 [".sync", "number"]
   const match = name.match(modifierRE);
+
   if (match) {
     const ret = {};
-    match.forEach((m) => {
-      ret[m.slice(1)] = true;
-    });
+
+    // => 截掉 .
+    match.forEach((m) => (ret[m.slice(1)] = true));
+
     return ret;
   }
 }
@@ -868,6 +883,9 @@ function guardIESVGBug(attrs) {
 function checkForAliasModel(el, value) {
   let _el = el;
   while (_el) {
+    // => 您将 v-model 直接绑定到 v-for 迭代别名
+    // => 这将无法修改 v-for 源数组，因为写入别名就像修改函数局部变量一样
+    // => 考虑使用对象数组，并在对象属性上使用 v-model
     if (_el.for && _el.alias === value) {
       warn(
         `<${el.tag} v-model="${value}">: ` +

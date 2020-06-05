@@ -1,5 +1,3 @@
-/* @flow */
-
 const validDivisionCharRE = /[\w).+\-_$\]]/;
 
 /* => 过滤器解析器 */
@@ -70,7 +68,7 @@ export function parseFilters(exp: string): string {
         let j = i - 1;
         let p;
 
-        // => 查找第一个非空白的prev字符
+        // => 查找第一个非空白的 prev 字符
         for (; j >= 0; j--) {
           p = exp.charAt(j);
           if (p !== ' ') break;

@@ -5,7 +5,7 @@ type Range = { start?: number, end?: number };
 
 /* => Vue 编译器警告 */
 export function baseWarn(msg: string, range?: Range) {
-  console.error(`[Vue compiler]: ${ msg }`);
+  console.error(`[Vue compiler]: ${msg}`);
 }
 
 export function pluckModuleFunction<F: Function>(modules: ?Array<Object>, key: string): Array<F> {
@@ -42,20 +42,13 @@ export function addDirective(
   modifiers: ?ASTModifiers,
   range?: Range,
 ) {
-  (el.directives || (el.directives = [])).push(rangeSetItem({
-    name,
-    rawName,
-    value,
-    arg,
-    isDynamicArg,
-    modifiers,
-  }, range));
+  (el.directives || (el.directives = [])).push(rangeSetItem({ name, rawName, value, arg, isDynamicArg, modifiers }, range));
   el.plain = false;
 }
 
 function prependModifierMarker(symbol: string, name: string, dynamic?: boolean): string {
   // => 将事件标记为已捕获
-  return dynamic ? `_p(${ name },"${ symbol }")` : symbol + name;
+  return dynamic ? `_p(${name},"${symbol}")` : symbol + name;
 }
 
 export function addHandler(
@@ -72,43 +65,49 @@ export function addHandler(
 
   // => 警告预防和被动修改
   if (process.env.NODE_ENV !== 'production' && warn && modifiers.prevent && modifiers.passive) {
-    // => passive 和 prevent 不能同时使用。 passive 处理程序不能阻止默认事件。
-    warn('passive and prevent can\'t be used together. Passive handler can\'t prevent default event.', range);
+    // => passive 和 prevent 不能一起使用。 passive 处理程序无法阻止默认事件。
+    warn("passive and prevent can't be used together. Passive handler can't prevent default event.", range);
   }
 
   // => 规范化右击/中击。因为他们实际上并没有触发，这在技术上是特定于浏览器的，但至少现在浏览器是唯一的目标事件有右/中点击。
   if (modifiers.right) {
+    // => 只当点击鼠标右键时触发
     if (dynamic) {
-      name = `(${ name })==='click'?'contextmenu':(${ name })`;
+      name = `(${name})==='click'?'contextmenu':(${name})`;
     } else if (name === 'click') {
       name = 'contextmenu';
       delete modifiers.right;
     }
   } else if (modifiers.middle) {
+    // => 只当点击鼠标中键时触发
     if (dynamic) {
-      name = `(${ name })==='click'?'mouseup':(${ name })`;
+      name = `(${name})==='click'?'mouseup':(${name})`;
     } else if (name === 'click') {
       name = 'mouseup';
     }
   }
 
-  // => 检查捕获修饰符
+  // => 添加事件侦听器时使用 capture 模式
   if (modifiers.capture) {
     delete modifiers.capture;
     name = prependModifierMarker('!', name, dynamic);
   }
 
+  // => 只触发一次回调
   if (modifiers.once) {
     delete modifiers.once;
     name = prependModifierMarker('~', name, dynamic);
   }
 
+  // => 以 { passive: true } 模式添加侦听器
   if (modifiers.passive) {
     delete modifiers.passive;
     name = prependModifierMarker('&', name, dynamic);
   }
 
   let events;
+
+  // => 监听组件根元素的原生事件
   if (modifiers.native) {
     delete modifiers.native;
     events = el.nativeEvents || (el.nativeEvents = {});
@@ -176,6 +175,7 @@ export function getAndRemoveAttrByRegex(el: ASTElement, name: RegExp) {
   }
 }
 
+/* => start / end 是在 parseHTML 中截取的范围 */
 function rangeSetItem(item: any, range?: { start?: number, end?: number }) {
   if (range) {
     if (range.start != null) item.start = range.start;

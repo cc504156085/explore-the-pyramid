@@ -1,8 +1,4 @@
-/* @flow */
-
-/**
- * => 组件 v-model 的跨平台代码生成
- */
+/* => 组件 v-model 的跨平台代码生成 */
 export function genComponentModel(el: ASTElement, value: string, modifiers: ?ASTModifiers): ?boolean {
   const { number, trim } = modifiers || {};
 
@@ -17,9 +13,7 @@ export function genComponentModel(el: ASTElement, value: string, modifiers: ?AST
   el.model = { value: `(${value})`, expression: JSON.stringify(value), callback: `function (${baseValueExpression}) {${assignment}}` };
 }
 
-/**
- * => 用于生成 v-model 值分配代码的跨平台 codegen 助手。
- */
+/* => 用于生成 v-model 值分配代码的跨平台 codegen 助手 */
 export function genAssignmentCode(value: string, assignment: string): string {
   const res = parseModel(value);
   if (res.key === null) {
@@ -30,7 +24,7 @@ export function genAssignmentCode(value: string, assignment: string): string {
 }
 
 /**
- * 将一个 v-model 表达式解析为基本路径和最后的键段。处理点路径和可能的方括号。
+ * 将一个 v-model 表达式解析为基本路径和最后的键段。处理点路径和可能的方括号
  *
  * 可能的情况下:
  *
@@ -45,10 +39,7 @@ export function genAssignmentCode(value: string, assignment: string): string {
 
 let len, str, chr, index, expressionPos, expressionEndPos;
 
-type ModelParseResult = {
-  exp: string,
-  key: string | null,
-};
+type ModelParseResult = { exp: string, key: string | null };
 
 export function parseModel(val: string): ModelParseResult {
   // => 允许 v-model="obj.val " (后面的空白)
