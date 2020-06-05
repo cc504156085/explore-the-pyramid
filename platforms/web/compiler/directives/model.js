@@ -28,7 +28,6 @@ export default function model(el: ASTElement, dir: ASTDirective, _warn: Function
 
   if (el.component) {
     genComponentModel(el, value, modifiers);
-
     // => 组件 v-model 不需要额外的运行时
     return false;
   } else if (tag === 'select') {
@@ -127,19 +126,30 @@ function genDefaultModel(el: ASTElement, value: string, modifiers: ?ASTModifiers
     }
   }
 
+  // => v-model 指令的修饰符
   const { lazy, number, trim } = modifiers || {};
   const needCompositionGuard = !lazy && type !== 'range';
+
+  // => 取代 input 监听 change 事件
   const event = lazy ? 'change' : type === 'range' ? RANGE_TOKEN : 'input';
 
   let valueExpression = '$event.target.value';
-  if (trim) valueExpression = `$event.target.value.trim()`;
 
+  // => 输入首尾空格过滤
+  if (trim) valueExpression = `$event.target.value.trim()`;
+3
+  // => 输入字符串转为有效的数字
   if (number) valueExpression = `_n(${valueExpression})`;
 
+  // => 生成代码字符串
   let code = genAssignmentCode(value, valueExpression);
   if (needCompositionGuard) code = `if($event.target.composing)return;${code}`;
 
+  // => v-model="xxx" 相当于 :value="xxx" + @input="xxx=$event.target.value" 的语法糖
+  // => 添加 prop 与事件处理程序
   addProp(el, 'value', `(${value})`);
   addHandler(el, event, code, null, true);
+
+  // => 若有该修饰符，得到焦点时就触发事件
   if (trim || number) addHandler(el, 'blur', '$forceUpdate()');
 }

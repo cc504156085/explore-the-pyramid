@@ -16,6 +16,8 @@ export function genComponentModel(el: ASTElement, value: string, modifiers: ?AST
 /* => 用于生成 v-model 值分配代码的跨平台 codegen 助手 */
 export function genAssignmentCode(value: string, assignment: string): string {
   const res = parseModel(value);
+
+  // => v-model 进入 if
   if (res.key === null) {
     return `${value}=${assignment}`;
   } else {

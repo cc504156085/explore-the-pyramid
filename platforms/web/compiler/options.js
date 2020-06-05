@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isPreTag, mustUseProp, isReservedTag, getTagNamespace } from '../util/index';
 
 import modules from './modules/index';
