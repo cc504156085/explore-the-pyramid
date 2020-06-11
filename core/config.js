@@ -29,7 +29,7 @@ export type Config = {
 };
 
 export default ({
-  // => 选项合并策略(在core/util/options中使用)
+  // => 选项合并策略(在 core/util/options 中使用)
   optionMergeStrategies: Object.create(null),
 
   // => 是否压制警告
@@ -38,7 +38,7 @@ export default ({
   // => 启动显示生产模式提示信息? | 开发环境下默认启动
   productionTip: process.env.NODE_ENV !== 'production',
 
-  // => 是否启用devtools | 开发环境下默认启动
+  // => 是否启用 devtools | 开发环境下默认启动
   devtools: process.env.NODE_ENV !== 'production',
 
   // => 是否记录性能

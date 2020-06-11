@@ -26,6 +26,7 @@ export function createCompileToFunctionFn(compile: Function): Function {
     if (process.env.NODE_ENV !== 'production') {
       // => 检测可能的 CSP 限制
       try {
+        // => 尝试当前环境下是否能生成动态函数
         new Function('return 1');
       } catch (e) {
         if (e.toString().match(/unsafe-eval|CSP/)) {
@@ -35,10 +36,10 @@ export function createCompileToFunctionFn(compile: Function): Function {
            */
           warn(
             'It seems you are using the standalone build of Vue.js in an ' +
-            'environment with Content Security Policy that prohibits unsafe-eval. ' +
-            'The template compiler cannot work in this environment. Consider ' +
-            'relaxing the policy to allow unsafe-eval or pre-compiling your ' +
-            'templates into render functions.',
+              'environment with Content Security Policy that prohibits unsafe-eval. ' +
+              'The template compiler cannot work in this environment. Consider ' +
+              'relaxing the policy to allow unsafe-eval or pre-compiling your ' +
+              'templates into render functions.',
           );
         }
       }
@@ -56,9 +57,9 @@ export function createCompileToFunctionFn(compile: Function): Function {
       if (compiled.errors && compiled.errors.length) {
         if (options.outputSourceRange) {
           // => 编译模板错误
-          compiled.errors.forEach((e) => warn(`Error compiling template: ${ e.msg }` + generateCodeFrame(template, e.start, e.end), vm));
+          compiled.errors.forEach((e) => warn(`Error compiling template: ${e.msg}` + generateCodeFrame(template, e.start, e.end), vm));
         } else {
-          warn(`Error compiling template: ${ template }` + compiled.errors.map((e) => `- ${ e }`).join('\n'), vm);
+          warn(`Error compiling template: ${template}` + compiled.errors.map((e) => `- ${e}`).join('\n'), vm);
         }
       }
 
@@ -85,7 +86,7 @@ export function createCompileToFunctionFn(compile: Function): Function {
     if (process.env.NODE_ENV !== 'production') {
       if ((!compiled.errors || !compiled.errors.length) && fnGenErrors.length) {
         // => 生成渲染函数失败
-        warn(`Failed to generate render function: ` + fnGenErrors.map(({ err, code }) => `${ err.toString() } in ${ code }`).join('\n'), vm);
+        warn(`Failed to generate render function: ` + fnGenErrors.map(({ err, code }) => `${err.toString()} in ${code}`).join('\n'), vm);
       }
     }
 

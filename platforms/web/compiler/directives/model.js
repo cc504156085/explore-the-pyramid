@@ -137,7 +137,7 @@ function genDefaultModel(el: ASTElement, value: string, modifiers: ?ASTModifiers
 
   // => 输入首尾空格过滤
   if (trim) valueExpression = `$event.target.value.trim()`;
-3
+
   // => 输入字符串转为有效的数字
   if (number) valueExpression = `_n(${valueExpression})`;
 

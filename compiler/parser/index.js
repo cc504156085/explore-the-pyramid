@@ -55,6 +55,7 @@ let maybeComponent;
 
 /* => 创建 AST 元素 */
 export function createASTElement(tag: string, attrs: Array<ASTAttr>, parent: ASTElement | void): ASTElement {
+  // => type: 1 普通元素节点 / attrsList 属性数组 / attrsMap 属性对象（将属性数组转化成对象）
   return { type: 1, tag, attrsList: attrs, attrsMap: makeAttrsMap(attrs), rawAttrsMap: {}, parent, children: [] };
 }
 
@@ -193,11 +194,11 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
      * @param {*} tag    => 标签名
      * @param {*} attrs  => 属性
      * @param {*} unary  => 自闭合标签标识
-     * @param {*} start  => 开始：性能测试 / 警告触发
-     * @param {*} end    => 结束：性能测试 / 警告触发
+     * @param {*} start  => 开始位置
+     * @param {*} end    => 结束位置
      */
     start(tag, attrs, unary, start, end) {
-      // => 检查名称空间，如果有父级的 ns，则继承它（ XML ）
+      // => 检查名称空间，如果有父级的 ns，则继承它（ XML ），第一次触发 start 钩子函数时，currentParent 当前元素的父级是没有的
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag);
 
       // => 处理 IE 中 SVG 的 Bug
@@ -219,7 +220,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
         }
         attrs.forEach((attr) => {
           if (invalidAttributeRE.test(attr.name)) {
-            warn(`Invalid dynamic argument expression: attribute names cannot contain ` + `spaces, quotes, <, >, / or =.`, {
+            warn(`Invalid dynamic argument expression: attribute names cannot contain spaces, quotes, <, >, / or =.`, {
               start: attr.start + attr.name.indexOf(`[`),
               end: attr.start + attr.name.length,
             });
@@ -302,7 +303,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
       // IE textarea placeholder bug
       if (isIE && currentParent.tag === 'textarea' && currentParent.attrsMap.placeholder === text) return;
 
-      // => currentParent 当前节点的父节点
+      // => 当前节点的父节点
       const children = currentParent.children;
 
       if (inPre || text.trim()) {
@@ -364,7 +365,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
     },
   });
 
-  // => 返回 AST （使用对象描述节点）
+  // => 返回 AST （使用普通对象描述 DOM 节点）
   return root;
 }
 

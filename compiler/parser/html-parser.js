@@ -98,7 +98,7 @@ export function parseHTML(html, options) {
           const commentEnd = html.indexOf('-->');
 
           if (commentEnd >= 0) {
-            // => 只有 shouldKeepComment 为真时，才触发 comment 注释钩子函数
+            // => 只有 shouldKeepComment （是否保留注释节点）为真时，才触发 comment 注释钩子函数
             if (options.shouldKeepComment) options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3);
 
             // => shouldKeepComment 为假时，只截取字符串，不触发钩子函数
@@ -151,10 +151,13 @@ export function parseHTML(html, options) {
       }
 
       let text, rest, next;
+
+      // => 如：{{xxx}}{{xxx}}</div> ，匹配到第一个 < 时，indexOf 返回值大于 0
       if (textEnd >= 0) {
+        // => 截取 > 后续的文本
         rest = html.slice(textEnd);
 
-        // => 匹配是文本节点，例如： 1<2<3</div> ，每一轮都判断是否匹配非文本节点
+        // => 如果文本中也存在 < ，如 {{xxx}}<{{xxx}}</div> ，循环判断，不是结束标签 / 开始标签 / 注释标签 / 条件注释标签
         while (!endTag.test(rest) && !startTagOpen.test(rest) && !comment.test(rest) && !conditionalComment.test(rest)) {
           // => "<" 在纯文本中，要宽容，把它当作文本来对待，截取到下一个 < 的位置
           next = rest.indexOf('<', 1);
@@ -164,22 +167,24 @@ export function parseHTML(html, options) {
           // => 累加文本节点的长度
           textEnd += next;
 
+          // => 截取全部文本长度后剩余的标签字符串
           rest = html.slice(textEnd);
         }
 
+        // => 截取文本
         text = html.substring(0, textEnd);
       }
 
-      // => 纯文本
+      // => 纯文本（标签后面的文本），如：<span></span>hello
       if (textEnd < 0) text = html;
 
-      // => 截取纯文本
+      // => 截取文本并前进
       if (text) advance(text.length);
 
       // => 触发 chars 钩子函数
       if (options.chars && text) options.chars(text, index - text.length, index);
     } else {
-      // => 处理纯文本内容元素
+      // => 处理纯文本内容元素（ script / style / textarea ）
       let endTagLength = 0;
 
       const stackedTag = lastTag.toLowerCase();
@@ -205,7 +210,7 @@ export function parseHTML(html, options) {
       index += html.length - rest.length;
       html = rest;
 
-      // => 解析结束标签
+      // => 解析结束标签（ script / style / textarea ）
       parseEndTag(stackedTag, index - endTagLength, index);
     }
 
@@ -254,13 +259,16 @@ export function parseHTML(html, options) {
         match.attrs.push(attr);
       }
 
-      // => 解析当前标签是否为自闭合标签
+      // => 有 end 说明解析到了开始标签的结束尖括号 >
       if (end) {
-        // =>  <input /> 中的 / ，match.unarySlash = "/"
+        // => 解析当前标签是否为自闭合标签
+        // =>  <input /> 中的 / ，match.unarySlash = "/" 或者 <input> 是空字符串 ""
         match.unarySlash = end[1];
 
         advance(end[0].length);
         match.end = index;
+
+        // => 返回开始标签的所有信息对象（标签名 / 属性集合 / 开始位置 / 结束位置 / 是否是自闭合标签）
         return match;
       }
     }
@@ -271,9 +279,25 @@ export function parseHTML(html, options) {
     const tagName = match.tagName;
     const unarySlash = match.unarySlash;
 
+    // => 保持与浏览器一致的行为
     if (expectHTML) {
+      /**
+       * 如果 p 标签内包含 Phrasing 标签，例如 div，将直接解析（补上）结束标签
+       *
+       * <p>111<div>222</div></p>
+       *
+       * 最终浏览器会解析成（ Vue 与浏览器保持一致）：
+       *
+       * <p>111</p>
+       * <div>222</div>
+       * <p></p>
+       *
+       * 过程：
+       * <p>111<div>222</div></p> -> <p>111</p><div>222</div></p> -> <p>111</p><div>222</div><p></p>
+       */
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) parseEndTag(lastTag);
 
+      // => 可单开标签，如 <p></p> 直接为 <p> ，处理和上述相同
       if (canBeLeftOpenTag(tagName) && lastTag === tagName) parseEndTag(tagName);
     }
 
@@ -284,10 +308,13 @@ export function parseHTML(html, options) {
     const attrs = new Array(l);
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i];
+
+      // => 拿到正确的分组 value
       const value = args[3] || args[4] || args[5] || '';
       const shouldDecodeNewlines =
         tagName === 'a' && args[1] === 'href' ? options.shouldDecodeNewlinesForHref : options.shouldDecodeNewlines;
 
+      // => key-value
       attrs[i] = { name: args[1], value: decodeAttr(value, shouldDecodeNewlines) };
 
       if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
@@ -296,8 +323,11 @@ export function parseHTML(html, options) {
       }
     }
 
+    // => 非自闭合标签压栈，自闭合标签不需要
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end });
+
+      // => 栈顶元素
       lastTag = tagName;
     }
 
@@ -315,17 +345,21 @@ export function parseHTML(html, options) {
       // => 标签名转小写
       lowerCasedTagName = tagName.toLowerCase();
 
+      // => 如果第一次匹配不成功， pos 递减，此时在下方 i > pos，触发警告
       for (pos = stack.length - 1; pos >= 0; pos--) {
+        // => 判断当前结束标签是否和栈顶标签相同（若不相同继续递减判断）
         if (stack[pos].lowerCasedTag === lowerCasedTagName) break;
       }
     } else {
-      // => 如果没有提供标签名称，执行清空操作
+      // => 如果没有传入参数，执行清空操作
       pos = 0;
     }
 
+    // => 说明栈中还有元素
     if (pos >= 0) {
       // => 关闭所有开始标签的元素，向上堆栈
       for (let i = stack.length - 1; i >= pos; i--) {
+        // => 第一次匹配不成功，pos 递减后， i 必定大于 pos ，说明没有结束标签
         if (process.env.NODE_ENV !== 'production' && (i > pos || !tagName) && options.warn) {
           // => 标签 tag 没有匹配的结束标签。
           options.warn(`tag <${stack[i].tag}> has no matching end tag.`, { start: stack[i].start, end: stack[i].end });
@@ -335,9 +369,14 @@ export function parseHTML(html, options) {
         if (options.end) options.end(stack[i].tag, start, end);
       }
 
-      // => 从堆栈中删除开始标签
+      // => 从堆栈中删除开始标签（出栈）
+      // => 等价于 stack.length-- ，但由于有特殊情况（抛出没有结束标签的警告，并且删除没有结束标签的标签），将其赋值为 pos（没有结束标签的标签的位置）
       stack.length = pos;
+
+      // => 更新栈顶元素
       lastTag = pos && stack[pos - 1].tag;
+
+      // => 保持与浏览器一致的行为，自动补上标签
     } else if (lowerCasedTagName === 'br') {
       if (options.start) options.start(tagName, [], true, start, end);
     } else if (lowerCasedTagName === 'p') {
