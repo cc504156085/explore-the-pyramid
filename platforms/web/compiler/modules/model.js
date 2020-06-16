@@ -1,4 +1,6 @@
 /**
+ * 将具有动态类型绑定的 input[v-model] 扩展到 v-if-else 链中
+ * 
  * Expand input[v-model] with dynamic type bindings into v-if-else chains
  * Turn this:
  *   <input v-model="data[type]" :type="type">

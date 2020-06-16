@@ -1,5 +1,3 @@
-/* @flow */
-
 import { isDef, isObject } from 'shared/util';
 
 export function genClassForVnode(vnode: VNodeWithData): string {
@@ -8,14 +6,10 @@ export function genClassForVnode(vnode: VNodeWithData): string {
   let childNode = vnode;
   while (isDef(childNode.componentInstance)) {
     childNode = childNode.componentInstance._vnode;
-    if (childNode && childNode.data) {
-      data = mergeClassData(childNode.data, data);
-    }
+    if (childNode && childNode.data) data = mergeClassData(childNode.data, data);
   }
   while (isDef((parentNode = parentNode.parent))) {
-    if (parentNode && parentNode.data) {
-      data = mergeClassData(data, parentNode.data);
-    }
+    if (parentNode && parentNode.data) data = mergeClassData(data, parentNode.data);
   }
   return renderClass(data.staticClass, data.class);
 }
@@ -34,10 +28,7 @@ function mergeClassData(
 }
 
 export function renderClass(staticClass: ?string, dynamicClass: any): string {
-  if (isDef(staticClass) || isDef(dynamicClass)) {
-    return concat(staticClass, stringifyClass(dynamicClass));
-  }
-  /* istanbul ignore next */
+  if (isDef(staticClass) || isDef(dynamicClass)) return concat(staticClass, stringifyClass(dynamicClass));
   return '';
 }
 
@@ -46,16 +37,9 @@ export function concat(a: ?string, b: ?string): string {
 }
 
 export function stringifyClass(value: any): string {
-  if (Array.isArray(value)) {
-    return stringifyArray(value);
-  }
-  if (isObject(value)) {
-    return stringifyObject(value);
-  }
-  if (typeof value === 'string') {
-    return value;
-  }
-  /* istanbul ignore next */
+  if (Array.isArray(value)) return stringifyArray(value);
+  if (isObject(value)) return stringifyObject(value);
+  if (typeof value === 'string') return value;
   return '';
 }
 

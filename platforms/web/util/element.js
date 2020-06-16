@@ -1,5 +1,3 @@
-/* @flow */
-
 import { inBrowser } from 'core/util/env';
 import { makeMap } from 'shared/util';
 
@@ -22,8 +20,7 @@ export const isHTMLTag = makeMap(
     'content,element,shadow,template,blockquote,iframe,tfoot',
 );
 
-// this map is intentionally selective, only covering SVG elements that may
-// contain child elements.
+// => 此 map 是有选择的，仅覆盖可能包含子元素的 SVG 元素
 export const isSVG = makeMap(
   'svg,animate,circle,clippath,cursor,defs,desc,ellipse,filter,font-face,' +
     'foreignObject,g,glyph,image,line,marker,mask,missing-glyph,path,pattern,' +
@@ -38,30 +35,21 @@ export const isReservedTag = (tag: string): ?boolean => {
 };
 
 export function getTagNamespace(tag: string): ?string {
-  if (isSVG(tag)) {
-    return 'svg';
-  }
-  // basic support for MathML
-  // note it doesn't support other MathML elements being component roots
-  if (tag === 'math') {
-    return 'math';
-  }
+  if (isSVG(tag)) return 'svg';
+
+  // => 对 MathML 的基本支持请注意，它不支持其他 MathML 元素作为根组件
+  if (tag === 'math') return 'math';
 }
 
 const unknownElementCache = Object.create(null);
 export function isUnknownElement(tag: string): boolean {
-  /* istanbul ignore if */
-  if (!inBrowser) {
-    return true;
-  }
-  if (isReservedTag(tag)) {
-    return false;
-  }
+  if (!inBrowser) return true;
+
+  if (isReservedTag(tag)) return false;
+
   tag = tag.toLowerCase();
-  /* istanbul ignore if */
-  if (unknownElementCache[tag] != null) {
-    return unknownElementCache[tag];
-  }
+  if (unknownElementCache[tag] != null) return unknownElementCache[tag];
+
   const el = document.createElement(tag);
   if (tag.indexOf('-') > -1) {
     // http://stackoverflow.com/a/28210364/1070244
