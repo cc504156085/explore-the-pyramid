@@ -134,6 +134,8 @@ export function parse(template: string, options: CompilerOptions): ASTElement | 
           const name = element.slotTarget || '"default"';
           (currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element;
         }
+
+        // => 建立父子关系
         currentParent.children.push(element);
         element.parent = currentParent;
       }
